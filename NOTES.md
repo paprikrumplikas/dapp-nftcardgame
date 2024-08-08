@@ -49,7 +49,37 @@
 ----------------------------------------------------------------------------------------------------------------------------
 
 
+   TRICKS
+
+   1. install extension: ES7+ React... @note type "rafce" in any file to create a React functional component (function) structure with default export statement
+   2. Catch syntax issues
+      1. Install ESLint extension 
+      2. npm install eslint eslint-plugin-react eslint-plugin-react-hooks eslint-plugin-react-refresh --save-dev
+      3. lsit issues: npx eslint . --ext .js,.jsx
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------
+
+
+   LEARNINGS
+      1. hooks: 
+         1. React Hooks need to be called at the top level of your functional components. This ensures they are called in the same order on every render, which is crucial for React to correctly maintain the state and lifecycle of hooks.
+         2. Hooks like useNavigate are designed to return values or functions that can be used inside components rather than performing an action directly when called.
+----------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
     BUILD
 
     1. Higher order components for resuability
-       1. 
+       1. Put this in PageHOC.jsx. @note diff between higher order components and regular ones is that HOC func components accept other lower level func components as a first input param. Esentially, they act as a wrapper for the lower level component.
