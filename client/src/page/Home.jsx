@@ -1,15 +1,32 @@
-import React from 'react';
+import React, { useState } from 'react';
+
+import { useGlobalContext } from '../context';
 
 // higher order component (can wrap another component)
-import { PageHOC } from "../components";
+import { PageHOC, CustomInput, CustomButton } from "../components";
+
 
 const Home = () => {
+    const { contract, walletAddress } = useGlobalContext();
+    const [playerName, setPlayerName] = useState("");
 
     return (
+        //  div can be completely empty, but we can also add additional elements
+        <div className='flex flex-col'>
+            {/* render 2 custom components, passing props to them */}
+            <CustomInput
+                label="Name"
+                placeholder="Enter your player name"
+                value={playerName}
+                handleValueChange={setPlayerName}
+            />
+            <CustomButton
+                title="Register"
+                handleClick={() => { }}
+                restStyles="mt-6"
+            />
 
-        <div>
-            {/* div can be completely empty, but we can also add additional elements */}
-            <h1 className='text-white text-xl'>Hello from Home!</h1>
+
         </div>
     );
 };

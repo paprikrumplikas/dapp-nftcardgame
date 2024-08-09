@@ -58,6 +58,15 @@
       3. lsit issues: npx eslint . --ext .js,.jsx
 
 
+----------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------
+
+   CONNECTING TO THE BLOCKCHAIN
+
+   1. Contect folder has everything we need to connect our FO app to the blockchain
+
 
 
 ----------------------------------------------------------------------------------------------------------------------------
@@ -70,6 +79,8 @@
       1. hooks: 
          1. React Hooks need to be called at the top level of your functional components. This ensures they are called in the same order on every render, which is crucial for React to correctly maintain the state and lifecycle of hooks.
          2. Hooks like useNavigate are designed to return values or functions that can be used inside components rather than performing an action directly when called.
+         3. useState: React components automatically re-render when their state changes. By using useState, React knows that when setWalletAddress is called, it should re-render the component to reflect the updated state. This reactivity is crucial for building interactive user interfaces.
+         If you used a regular variable like let walletAddress = "";, changing its value wouldn’t trigger a re-render, so the UI wouldn’t update to reflect the new value.
 ----------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------
