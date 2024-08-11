@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useEffect, UseRef, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 // to connect to the blockchain
-import { ethers } from "ethers";
+import { ethers, InfuraProvider } from "ethers";
 // help us to set up the onboarding that ensures the user is properly connected to the app
 import Web3Modal from "web3modal";
 import { useNavigate } from "react-router-dom";
@@ -16,6 +16,7 @@ export const GlobalContextProvider = ({ children }) => {
 
     const [provider, setProvider] = useState("");
     const [contract, setContract] = useState("");
+    const [showAlert, setShowAlert] = useState({ status: false, type: 'info', message: '' })
 
     //* Set the wallet address to the state
     const updateCurrentWalletAddress = async () => {
@@ -42,28 +43,50 @@ export const GlobalContextProvider = ({ children }) => {
     useEffect(() => {
         const setSmartContractAndProvider = async () => {
             const web3Modal = new Web3Modal();
-            const connection = await web3Modal.connect();
-            // @note this work only with ethers v5. For ethers v6, check the sendEther repo
-            const newProvider = new ethers.providers.Web3Provider(connection);
-            // @note this work only with ethers v5. For ethers v6, check the sendEther repo
-            const signer = newProvider.signer();
-            // @note this work only with ethers v5. For ethers v6, check the sendEther repo
+            // @note extension of the original which was only const connection = await web3Modal.connect()
+            const connection = await web3Modal.connect().catch((error) => {
+                console.error("Web3Modal connection failed:", error);
+                setShowAlert({
+                    status: true,
+                    type: 'error',
+                    message: 'Failed to connect wallet'
+                });
+            });
+            const newProvider = new ethers.BrowserProvider(connection);
+            const signer = await newProvider.getSigner();
             const newContract = new ethers.Contract(ADDRESS, ABI, signer);
 
+
+
             setProvider(newProvider);
-            setContract(contract);
+            setContract(newContract);
         }
 
         // call this function as soon as the website loads
         setSmartContractAndProvider();
     }, [])
 
+
+    useEffect(() => {
+        // if the alert shows (alert status is true), set a timer, show the alert for 10s, then close the alert, reset it
+        if (showAlert?.status) {
+            const timer = setTimeout(() => {
+                setShowAlert({ status: false, type: 'info', message: '' })
+            }, [10000])
+
+            // clear timer
+            return () => clearTimeout(timer);
+        }
+
+    }, [showAlert]);
+
     {/* @note in the value object of the GlobalContext.Provider, we can pass all the value we want to share with every single component of the app*/ }
     {/* @note For this to work, we need to wrap our entire application with the GlobalContextProvider in main.jsx*/ }
 
     return (
         <GlobalContext.Provider value={{
-            contract, walletAddress
+            contract, walletAddress, provider,
+            showAlert, setShowAlert
         }}>
             {/* @note If we dont have this, we dont return nothing, the page will be empty*/}
             {/* @note with specyfing {children}, we return everything we pass to out app*/}

@@ -49,6 +49,29 @@
 ----------------------------------------------------------------------------------------------------------------------------
 
 
+   ALERTS:
+
+   1. Alert.jsx: This is indeed where the alert component is defined. The component takes type and message as props and renders the alert accordingly.
+   2. index.jsc (GlobalContextProvider): This is where the state for showAlert is defined and managed. The GlobalContextProvider manages the state of the alert and provides setShowAlert to other components so they can trigger alerts. It also contains logic to automatically hide the alert after 10 seconds.
+   3. pageHOC.jsx: This file uses the useGlobalContext hook to access the showAlert state from the global context. It checks if an alert should be displayed (showAlert?.status) and, if so, renders the Alert component. This effectively means that any page wrapped with this HOC will display an alert if the showAlert state is set.
+   4. Home.jsx: This is where the alert status is set based on certain conditions, such as when there is an error or when a player is successfully registered. The setShowAlert function from the global context is used to trigger alerts with different types (info, failure, etc.) and messages.
+
+   Summary of Connections:
+   Alert Definition: Alert.jsx defines how an alert looks.
+   Alert State Management: GlobalContextProvider in index.jsc manages the alert's state (showAlert) and provides a function (setShowAlert) to update it.
+   Alert Display Logic: PageHOC.jsx uses the state from the context to determine whether to display the Alert component.
+   Alert Triggering: Home.jsx triggers the alert by updating the showAlert state when specific actions occur (e.g., errors or successful player registration).
+
+
+
+----------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------
+
+
+   ALERTS:
+
    TRICKS
 
    1. install extension: ES7+ React... @note type "rafce" in any file to create a React functional component (function) structure with default export statement

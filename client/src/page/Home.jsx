@@ -4,11 +4,49 @@ import { useGlobalContext } from '../context';
 
 // higher order component (can wrap another component)
 import { PageHOC, CustomInput, CustomButton } from "../components";
+//import { ContractFactory } from 'ethers';
 
 
 const Home = () => {
-    const { contract, walletAddress } = useGlobalContext();
+    const { contract, walletAddress, setShowAlert, provider } = useGlobalContext();
     const [playerName, setPlayerName] = useState("");
+
+    const handleClick = async () => {
+        try {
+            console.log("contract: ", contract);
+            console.log("wallet: ", walletAddress);
+            console.log("player: ", playerName);
+            console.log("provider:", provider)
+
+            // 2 lines below added by me for troubleshooting
+            //const network = await provider.getNetwork();
+            //console.log('Connected to network:', network);
+
+
+            const playerExists = await contract.isPlayer(walletAddress);
+
+            // if player doesnt exist, register player and show alert
+            if (!playerExists) {
+                // 2 inputs are the same for now
+                await contract.registerPlayer(playerName, playerName);
+
+                setShowAlert({
+                    status: true,
+                    type: 'info',
+                    message: `${playerName} is being summoned!`
+                })
+            }
+        } catch (error) {
+            setShowAlert({
+                status: true,
+                type: 'failure',
+                // does not work correctly. Will come back to this later. @note
+                // message: error.message
+                message: "Something went wrong!"
+            })
+            //alert(error); // browser's default error message display
+        }
+    }
 
     return (
         //  div can be completely empty, but we can also add additional elements
@@ -22,7 +60,7 @@ const Home = () => {
             />
             <CustomButton
                 title="Register"
-                handleClick={() => { }}
+                handleClick={handleClick}
                 restStyles="mt-6"
             />
 
