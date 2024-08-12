@@ -6,6 +6,7 @@ import Web3Modal from "web3modal";
 import { useNavigate } from "react-router-dom";
 
 import { ABI, ADDRESS } from "../contract";
+import { createEventListeners } from "./CreateEventListeners";
 
 // hook return a function that we can use later multiple times
 const GlobalContext = createContext();
@@ -17,6 +18,14 @@ export const GlobalContextProvider = ({ children }) => {
     const [provider, setProvider] = useState("");
     const [contract, setContract] = useState("");
     const [showAlert, setShowAlert] = useState({ status: false, type: 'info', message: '' })
+    const [battleName, setBattleName] = useState("");
+    // new state with an object containing 2 arrays and a 3rd
+    const [gameData, setGameData] = useState({
+        players: [], pendingBattles: [], activeBattle: null
+    });
+    const [updateGameData, setUpdateGameData] = useState(0);
+
+    const navigate = useNavigate();
 
     //* Set the wallet address to the state
     const updateCurrentWalletAddress = async () => {
@@ -34,6 +43,7 @@ export const GlobalContextProvider = ({ children }) => {
         updateCurrentWalletAddress();
 
         // but we also want to call it when account is changed in the wallet extension, so
+        // on: listening the events emitted by the provider. Listening to accountsChnaged
         window.ethereum.on('accountsChanged',
             updateCurrentWalletAddress)
     }, [])
@@ -56,8 +66,6 @@ export const GlobalContextProvider = ({ children }) => {
             const signer = await newProvider.getSigner();
             const newContract = new ethers.Contract(ADDRESS, ABI, signer);
 
-
-
             setProvider(newProvider);
             setContract(newContract);
         }
@@ -68,11 +76,23 @@ export const GlobalContextProvider = ({ children }) => {
 
 
     useEffect(() => {
+        // if contract exists, create event listener
+        if (contract) {
+            createEventListeners({
+                navigate, contract, provider,
+                walletAddress, setShowAlert,
+                setUpdateGameData,
+            });
+        }
+    }, [contract])
+
+
+    useEffect(() => {
         // if the alert shows (alert status is true), set a timer, show the alert for 10s, then close the alert, reset it
         if (showAlert?.status) {
             const timer = setTimeout(() => {
                 setShowAlert({ status: false, type: 'info', message: '' })
-            }, [10000])
+            }, 10000)
 
             // clear timer
             return () => clearTimeout(timer);
@@ -80,16 +100,52 @@ export const GlobalContextProvider = ({ children }) => {
 
     }, [showAlert]);
 
+
+    // set the game data to the state - to check if the battle is active, and if the player is in a battle
+    // gonna be executed whenever the contract or the setGameData var changes; see dependency array
+    useEffect(() => {
+        const fetchGameData = async () => {
+            const fetchedBattles = await contract.getAllBattles();
+            // filter those active battles that are pending (signified by status '0', but bigInt 0, i.e. 0n)
+            const pendingBattles = fetchedBattles.filter((battle) => battle.battleStatus === 0n);
+            let activeBattle = null;
+
+            fetchedBattles.forEach((battle) => {
+                // check if the player has the same address as the wallet in the browser
+                if (battle.players.find((player) => player.toLowerCase() === walletAddress.toLowerCase())) {
+                    // if there is no winner yet
+                    if (battle.winner.startsWith('0x00')) {
+                        activeBattle = battle;
+                    }
+                }
+            })
+
+            // updating the state with the game data
+            // slicing pendingBattles[], as the 0th entry is always one filled with 0s
+            setGameData({ pendingBattles: pendingBattles.slice(1), activeBattle });
+
+            // @note this will not work, state updates in React are asynchronous, meaning that gameData is not updated immediately after calling setGameData
+            // console.log("active battle status 2: ", gameData.activeBattle.battleStatus);
+
+        }
+
+        // if contract exists, call the fetchGameData function
+        if (contract) fetchGameData();
+    }, [contract, updateGameData])
+
+
     {/* @note in the value object of the GlobalContext.Provider, we can pass all the value we want to share with every single component of the app*/ }
     {/* @note For this to work, we need to wrap our entire application with the GlobalContextProvider in main.jsx*/ }
 
     return (
         <GlobalContext.Provider value={{
             contract, walletAddress, provider,
-            showAlert, setShowAlert
+            showAlert, setShowAlert,
+            battleName, setBattleName,
+            gameData
         }}>
             {/* @note If we dont have this, we dont return nothing, the page will be empty*/}
-            {/* @note with specyfing {children}, we return everything we pass to out app*/}
+            {/* @note with specyfing {children}, we return everything we pass to our app*/}
             {children}
         </GlobalContext.Provider>
     )

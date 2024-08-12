@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
-
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGlobalContext } from '../context';
 
 // higher order component (can wrap another component)
 import { PageHOC, CustomInput, CustomButton } from "../components";
+import { Navigate } from 'react-router-dom';
 //import { ContractFactory } from 'ethers';
 
 
 const Home = () => {
     const { contract, walletAddress, setShowAlert, provider } = useGlobalContext();
     const [playerName, setPlayerName] = useState("");
+    const navigate = useNavigate();
 
     const handleClick = async () => {
         try {
@@ -47,6 +49,24 @@ const Home = () => {
             //alert(error); // browser's default error message display
         }
     }
+
+    // @note use this useEffect when contract changes -> adding 'contract' to the dependeny array
+    useEffect(() => {
+        const checkForPlayerToken = async () => {
+            // check if player exists
+            const playerExists = await contract.isPlayer(walletAddress);
+            // check if playerToken exists
+            const playerTokenExists = await contract.isPlayerToken(walletAddress);
+
+            // if both exist, naviget to next page
+            if (playerExists && playerTokenExists) {
+                navigate('/create-battle')
+            }
+        }
+
+        // if contract exists, call the function defined above
+        if (contract) checkForPlayerToken();
+    }, [contract])
 
     return (
         //  div can be completely empty, but we can also add additional elements
