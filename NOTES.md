@@ -132,6 +132,25 @@
 
       Ethers.js v6: In v6, ethers.js introduces a slightly different behavior, where the data returned from a contract call can be an array, and you access fields using indexed positions (e.g., player01[1]). This means you access the data like you would with a tuple in Solidity, where player01[0], player01[1], etc., represent different fields.
 
+      4. Setting things to local storage
+         IN BATTLEGROUND.JSX:
+         //@note also save it to local storage so if a user reloads the page we keep his chosen battleground
+        // whether this has been set to local stroage is checked in the context, index.jsx
+        localStorage.setItem('battleground', ground.id);
+
+         IN INDEX:JSX, i.e. CONTEXT
+         // @note checking the local storage for backgorund selection, so that when a user reloads the page, his chosen battleground does not change
+         // this local storage is set in Battleground
+         useEffect(() => {
+            const battlegroundFromLocalStorage = localStorage.getItem('battleground');
+            if (battlegroundFromLocalStorage) {
+                  setBattleGround(battlegroundFromLocalStorage);
+            }
+            else {
+                  localStorage.setItem('battleground', battleGround);
+            }
+         }, [])
+
 ----------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------

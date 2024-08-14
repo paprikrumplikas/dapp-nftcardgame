@@ -24,9 +24,22 @@ export const GlobalContextProvider = ({ children }) => {
         players: [], pendingBattles: [], activeBattle: null
     });
     const [updateGameData, setUpdateGameData] = useState(0);
+    // battlegrounf of the battle page. State needed in battle and battleground pages
     const [battleGround, setBattleGround] = useState('bg-astral');
 
     const navigate = useNavigate();
+
+    // @note checking the local storage for backgorund selection, so that when a user reloads the page, his chosen battleground does not change
+    // this local storage is set in Battleground
+    useEffect(() => {
+        const battlegroundFromLocalStorage = localStorage.getItem('battleground');
+        if (battlegroundFromLocalStorage) {
+            setBattleGround(battlegroundFromLocalStorage);
+        }
+        else {
+            localStorage.setItem('battleground', battleGround);
+        }
+    }, [])
 
     //* Set the wallet address to the state
     const updateCurrentWalletAddress = async () => {
