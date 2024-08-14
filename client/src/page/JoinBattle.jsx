@@ -11,16 +11,17 @@ const JoinBattle = () => {
     const { gameData, contract, setShowAlert, setBattleName, walletAddress } = useGlobalContext();
 
 
-    const renderCount = useRef(0);
-    renderCount.current += 1;
-    console.log("Number of games:", gameData.pendingBattles.length);
-    console.log("Render count: ", renderCount);
+    /* const renderCount = useRef(0);
+     renderCount.current += 1;
+     console.log("Number of games:", gameData.pendingBattles.length);
+     console.log("Render count: ", renderCount); 
+    */
 
 
     const handleClick = async (battleName) => {
         // navigation to the proper page is coded in the listener BUT 
         // this is not enough f a player navigates away from the page or reloads, they won't automatically be redirected back to the battle page unless the event happens again
-        setBattleName(battleName)
+        setBattleName(battleName);
 
         try {
             await contract.joinBattle(battleName);

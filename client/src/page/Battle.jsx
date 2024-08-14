@@ -91,7 +91,7 @@ function Battle() {
             {/* if showAlert status exists (truthy), we are gonna show and alert component */}
             {showAlert?.status && <Alert type={showAlert.type} message={showAlert.message} />}
 
-            <PlayerInfo player={player2} playerIcon={player02Icon} mt />
+            <PlayerInfo player={player2} playerIcon={player02Icon} />
 
             {/* div for the top card */}
             {/* @note in ethers v6, playerAddress and playerName fields can be accessed like player1[0] and player1[0], not player1.playerAddress */}

@@ -6,11 +6,14 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Home, CreateBattle, JoinBattle, Battle, Battleground } from "./page";
 import { GlobalContextProvider } from './context';
 import './index.css';
+import { OnboardModal } from "./components";
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <BrowserRouter>
     {/* custom context provider that supplies global state or functions to the entire app */}
     <GlobalContextProvider>
+      {/* custom  */}
+      <OnboardModal />
       {/* It looks through all its child <Route> elements and renders the first one that matches the current URL. */}
       <Routes>
         {/* @note Each <Route> defines a mapping between a URL path and a React component.  */}

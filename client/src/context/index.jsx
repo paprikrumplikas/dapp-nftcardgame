@@ -7,6 +7,15 @@ import { useNavigate } from "react-router-dom";
 
 import { ABI, ADDRESS } from "../contract";
 import { createEventListeners } from "./CreateEventListeners";
+/** @note give the GetParams() function
+ * designed to check the current status of a user's Ethereum wallet connection and provide information based on the state of the connection. 
+ * isError: Indicates if there was an error during the process.
+ * message: Holds any error or status messages.
+ * step: Used to track the progress or status of the connection process.
+ * balance: Stores the user's Ethereum balance.
+ * account: Holds the Ethereum account address.
+*/
+import { GetParams } from "../utils/onboard";
 
 // hook return a function that we can use later multiple times
 const GlobalContext = createContext();
@@ -26,6 +35,7 @@ export const GlobalContextProvider = ({ children }) => {
     const [updateGameData, setUpdateGameData] = useState(0);
     // battlegrounf of the battle page. State needed in battle and battleground pages
     const [battleGround, setBattleGround] = useState('bg-astral');
+    const [step, setStep] = useState(1);
 
     const navigate = useNavigate();
 
@@ -39,6 +49,25 @@ export const GlobalContextProvider = ({ children }) => {
         else {
             localStorage.setItem('battleground', battleGround);
         }
+    }, [])
+
+
+
+    //* @note Reset web3 onboarding modal params so the onboarding modal fully works
+    useEffect(() => {
+        const resetParams = async () => {
+            const currentStep = await GetParams();  // this function is comint from utils/onboard.js
+
+            setStep(currentStep.step);
+        }
+
+        // actually call the func
+        resetParams();
+
+        //
+        window?.ethereum?.on('chainChanged', () => resetParams());
+        window?.ethereum?.on('accountChanged', () => resetParams());
+
     }, [])
 
     //* Set the wallet address to the state
@@ -88,17 +117,17 @@ export const GlobalContextProvider = ({ children }) => {
         setSmartContractAndProvider();
     }, [])
 
-
+    // if step is -1, we are not ready for the game, we cannot call our function to call event listeners
     useEffect(() => {
-        // if contract exists, create event listener
-        if (contract) {
+        // if step is not -1 and contract exists, create event listener
+        if (step !== -1 && contract) {
             createEventListeners({
                 navigate, contract, provider,
                 walletAddress, setShowAlert,
                 setUpdateGameData,
             });
         }
-    }, [contract])
+    }, [contract, step])
 
 
     useEffect(() => {

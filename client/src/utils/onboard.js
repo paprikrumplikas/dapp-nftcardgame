@@ -86,7 +86,7 @@ function isEthereum() {
     }
     response.balance = currentBalance;
   
-    if (currentBalance < 0.2) {
+    if (currentBalance < 0.1) {
       response.step = 3;
       return response;
     }

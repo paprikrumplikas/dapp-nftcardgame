@@ -13,10 +13,19 @@ const CreateBattle = () => {
     const navigate = useNavigate();
 
     // changes when gameData changes
+    // this is actually run twice because of the sequence in which React updates state and the asynchronous nature of the rendering process.
+    // at initial render, according to logs, gameData is null
+    // then gameData is updated in an async way
+    // and useEffect runs again
+    // @note 1n and 0n in the conditionals. battleStatus is a long int, hence the need for the n
     useEffect(() => {
+        // check if battle is already set up (with 2 players). If yes, redirect to the battle page
+        if (gameData?.activeBattle?.battleStatus === 1n) {
+            navigate(`/battle/${gameData.activeBattle.name}`);
+        }
         // check if the current logged in player created a battle or not
         // syntax: first checks if gameData exists and not null. If exsits, it checks... if battle is pending
-        if (gameData?.activeBattle) {
+        else if (gameData?.activeBattle) {
             console.log("game status: ", gameData.activeBattle.battleStatus);
 
             if (gameData.activeBattle.battleStatus === 0n) {

@@ -41,7 +41,7 @@
        2. project specific
           1. update tailwind.config.css with provided stuff
           2. aquire assets folder with provided stuff
-          3. acquire OnboardModal.jsx @note this a basic, often used web3 component that check that everything is setup properly
+          3. acquire OnboardModal.jsx @note this a basic, often used web3 component that check that everything is setup properly. Put a self-closing OnbaordMocal tag in main.jsx.
              1. that core wallet is installed
              2. that we are connected the wallet
              3. that we are connected to the right network
@@ -150,6 +150,13 @@
                   localStorage.setItem('battleground', battleGround);
             }
          }, [])
+
+
+         5. OnboardModal.jsx @note this a basic, often used web3 component that check that everything is setup properly - connected to correct network, has enough balance (0.1 AVAX), etc.. To make it work:
+            1. export it in index.js
+            2. import it in main.jsx
+            3. Put a self-closing OnbaordMocal tag in main.jsx, above the router tags
+            4. in the context (index.jsx), add a useEffect the resets web3 onboarding modal params
 
 ----------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------
