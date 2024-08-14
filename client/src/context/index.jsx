@@ -24,6 +24,7 @@ export const GlobalContextProvider = ({ children }) => {
         players: [], pendingBattles: [], activeBattle: null
     });
     const [updateGameData, setUpdateGameData] = useState(0);
+    const [battleGround, setBattleGround] = useState('bg-astral');
 
     const navigate = useNavigate();
 
@@ -142,7 +143,8 @@ export const GlobalContextProvider = ({ children }) => {
             contract, walletAddress, provider,
             showAlert, setShowAlert,
             battleName, setBattleName,
-            gameData
+            gameData,
+            battleGround, setBattleGround,
         }}>
             {/* @note If we dont have this, we dont return nothing, the page will be empty*/}
             {/* @note with specyfing {children}, we return everything we pass to our app*/}

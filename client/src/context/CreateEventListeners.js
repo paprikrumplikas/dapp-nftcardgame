@@ -9,9 +9,7 @@ const AddNewEvent = (eventFilter, contract, cb) => {
     contract.off(eventFilter);  // @note specific to ethers v6
 
     contract.on(eventFilter, (Logs) => {    // @note specific to ethers v6
-        const parsedLog = (new ethers.Interface(ABI)).parseLog  // @note specific to ethers v6
-        (Logs);
-
+        const parsedLog = (new ethers.Interface(ABI)).parseLog(Logs);  // @note specific to ethers v6
         cb(parsedLog);
     })
 }

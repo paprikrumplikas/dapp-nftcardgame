@@ -18,6 +18,8 @@ const JoinBattle = () => {
 
 
     const handleClick = async (battleName) => {
+        // navigation to the proper page is coded in the listener BUT 
+        // this is not enough f a player navigates away from the page or reloads, they won't automatically be redirected back to the battle page unless the event happens again
         setBattleName(battleName)
 
         try {
@@ -73,6 +75,6 @@ const JoinBattle = () => {
 
 export default PageHOC(
     JoinBattle,
-    <>Join <br /> a battle!</>,
+    <>Join <br /> a battle</>,
     <>Join already existing battles</>
 )

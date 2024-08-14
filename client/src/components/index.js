@@ -8,6 +8,13 @@ import CustomInput from "./CustomInput";
 import CustomButton from "./CustomButton";
 import Alert from "./Alert";
 import GameLoad from "./GameLoad";
+import ActionButton from "./ActionButton";
+import Card from "./Card";
+import GameInfo from "./GameInfo";
+import PlayerInfo from "./PlayerInfo";
+
+
+
 
 
 export {
@@ -15,5 +22,9 @@ export {
     CustomInput,
     CustomButton,
     Alert,
-    GameLoad
+    GameLoad, 
+    ActionButton,
+    Card,
+    GameInfo,
+    PlayerInfo,
 }

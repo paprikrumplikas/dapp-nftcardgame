@@ -1,6 +1,17 @@
+   issues to fix:
+
+   1. tooltip on icons
+   2. connection to core wallet
+   3. auto-navigate to battle page
+   
+   
+   
+   
+   
+   
    START PROJECT
    
-   1. web3
+   4. web3
       1. install older version of ethers
       npm install ethers@5.7.2 @nomiclabs/hardhat-ethers --save-dev --legacy-peer-deps
       2. install older version of openzeppelin
@@ -8,7 +19,7 @@
       3. install other dependencies
       4. install Core Wallet, a Chrome extension for Avax, change to testnet, fund it, export private key
 
-   2. client
+   5. client
       1. basic
          1. cd ./client
          2. npm init vite@latest
@@ -79,6 +90,8 @@
       1. Install ESLint extension 
       2. npm install eslint eslint-plugin-react eslint-plugin-react-hooks eslint-plugin-react-refresh --save-dev
       3. lsit issues: npx eslint . --ext .js,.jsx
+   3. // cool package that adds tilting animation to elements wrapped by the <Tilt> tag
+      import Tilt from "react-parallax-tilt";
 
 
 ----------------------------------------------------------------------------------------------------------------------------
@@ -104,6 +117,21 @@
          2. Hooks like useNavigate are designed to return values or functions that can be used inside components rather than performing an action directly when called.
          3. useState: React components automatically re-render when their state changes. By using useState, React knows that when setWalletAddress is called, it should re-render the component to reflect the updated state. This reactivity is crucial for building interactive user interfaces.
          If you used a regular variable like let walletAddress = "";, changing its value wouldn’t trigger a re-render, so the UI wouldn’t update to reflect the new value.
+         4.  useParams()  is a hook provided by React Router that allows you to access the parameters of the current route.
+         //When a route is defined with parameters(e.g., /battle/: battleName), useParams can be used to extract these parameters inside the component that corresponds to that route.
+         const { battleName } = useParams();
+
+      2. spread operator
+           // @note ...player01 is the spread operator: copies all the properties of the player01 object into a new object
+           // copies all the properties of the player01 object into a new object
+          setPlayer1({ ...player01, att: p1Att, def: p1Def, health: p1H, mana: p1M });
+
+
+      3. ethers v6 vs v5
+      When interacting with a smart contract that returns a struct, ethers.js v5 typically returns the data as an object where you can access fields by their names. For example, player01.playerName would be valid if the smart contract defines a struct with a field called playerName.
+
+      Ethers.js v6: In v6, ethers.js introduces a slightly different behavior, where the data returned from a contract call can be an array, and you access fields using indexed positions (e.g., player01[1]). This means you access the data like you would with a tuple in Solidity, where player01[0], player01[1], etc., represent different fields.
+
 ----------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------
