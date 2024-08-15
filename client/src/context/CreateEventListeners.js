@@ -18,7 +18,6 @@ const AddNewEvent = (eventFilter, contract, cb) => {
 export const createEventListeners = ({navigate, contract, provider, walletAddress, setShowAlert, setUpdateGameData}) => {
     // filtering the events fpr a specified contract
     const NewPlayerEventFilter = contract.filters.NewPlayer();
-
     // call the func we created above
     AddNewEvent(NewPlayerEventFilter, contract, ({args}) => {
         // log so that we know the event happened
@@ -48,7 +47,12 @@ export const createEventListeners = ({navigate, contract, provider, walletAddres
             // get access to the previous UpdateGameData: prevUpdateGameData
             setUpdateGameData((prevUpdateGameData) => prevUpdateGameData + 1);
         }
+    });
 
 
+    // filter for moves
+    const BattleMoveEventFilter = contract.filters.BattleMove();
+    AddNewEvent(BattleMoveEventFilter, contract, ({args}) => {
+        console.log("Battle move initiated", args);
     });
 }

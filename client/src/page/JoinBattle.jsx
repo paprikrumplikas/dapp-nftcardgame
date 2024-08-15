@@ -8,7 +8,7 @@ import styles from "../styles"
 
 const JoinBattle = () => {
     const navigate = useNavigate();
-    const { gameData, contract, setShowAlert, setBattleName, walletAddress } = useGlobalContext();
+    const { gameData, contract, setShowAlert, setBattleName, walletAddress, setErrorMessage } = useGlobalContext();
 
 
     /* const renderCount = useRef(0);
@@ -32,7 +32,9 @@ const JoinBattle = () => {
                 message: `Joining ${battleName}`
             })
         } catch (error) {
-            console.log(error);
+            //console.log(error);
+            setErrorMessage(error);
+
         }
     };
 

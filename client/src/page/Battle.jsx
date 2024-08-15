@@ -10,7 +10,7 @@ import { playAudio } from "../utils/animation.js";
 
 
 function Battle() {
-    const { contract, gameData, walletAddress, showAlert, setShowAlert, battleGround } = useGlobalContext();
+    const { contract, gameData, walletAddress, showAlert, setShowAlert, battleGround, setErrorMessage } = useGlobalContext();
     const navigate = useNavigate();
 
     const [player1, setPlayer1] = useState({});
@@ -75,7 +75,8 @@ function Battle() {
                 setPlayer2({ ...player02, att: 'X', def: 'X', health: p2H, mana: p2M });
 
             } catch (error) {
-                console.log(error);
+                //console.log(error);
+                setErrorMessage(error);
             }
 
         }
@@ -83,6 +84,26 @@ function Battle() {
         // if there is a contract and an active battle
         if (contract && gameData.activeBattle) getPlayerInfo();
     }, [contract, gameData, battleName])
+
+
+    const makeAMove = async (choice) => {
+        playAudio(choice === 1 ? attackSound : defenseSound);
+
+
+        try {
+            await contract.attackOrDefendChoice(choice, battleName);
+            setShowAlert({
+                status: true,
+                type: "info",
+                message: `Initiating ${choice === 1 ? 'attack' : 'defense'}`
+            });
+        } catch (error) {
+            setErrorMessage(error);
+            //console.log(error);
+        }
+
+    }
+
 
 
     return (
@@ -107,7 +128,7 @@ function Battle() {
                 <div className='flex items-center flex-row'>
                     <ActionButton
                         imgUrl={attack}
-                        handClick={() => { }}
+                        handleClick={() => { makeAMove(1) }}
                         restStyles="mr-2 hover:border-yellow-400"
                     />
 
@@ -120,7 +141,7 @@ function Battle() {
 
                     <ActionButton
                         imgUrl={defense}
-                        handClick={() => { }}
+                        handleClick={() => { makeAMove(2) }}
                         restStyles="ml-6 hover:border-red-600"
                     />
                 </div>

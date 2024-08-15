@@ -36,6 +36,7 @@ export const GlobalContextProvider = ({ children }) => {
     // battlegrounf of the battle page. State needed in battle and battleground pages
     const [battleGround, setBattleGround] = useState('bg-astral');
     const [step, setStep] = useState(1);
+    const [errorMessage, setErrorMessage] = useState("");
 
     const navigate = useNavigate();
 
@@ -144,6 +145,27 @@ export const GlobalContextProvider = ({ children }) => {
     }, [showAlert]);
 
 
+    // @note handle error messages
+    useEffect(() => {
+        if (errorMessage) {
+            const parsedErrorMessage = errorMessage?.reason;
+
+            console.log("hej");
+            if (parsedErrorMessage) {
+                console.log("hej");
+
+                setShowAlert({
+                    status: true,
+                    type: 'failure',
+                    message: parsedErrorMessage
+                })
+            }
+
+        }
+
+    }, [errorMessage]);
+
+
     // set the game data to the state - to check if the battle is active, and if the player is in a battle
     // gonna be executed whenever the contract or the setGameData var changes; see dependency array
     useEffect(() => {
@@ -187,6 +209,7 @@ export const GlobalContextProvider = ({ children }) => {
             battleName, setBattleName,
             gameData,
             battleGround, setBattleGround,
+            errorMessage, setErrorMessage,
         }}>
             {/* @note If we dont have this, we dont return nothing, the page will be empty*/}
             {/* @note with specyfing {children}, we return everything we pass to our app*/}
