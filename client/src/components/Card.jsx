@@ -3,19 +3,21 @@ import React from 'react';
 import Tilt from "react-parallax-tilt";
 
 import styles from "../styles";
-// array of all card assets
+
+//  array of all card assets 
 import { allCards } from "../assets";
 
-// we want to fecth a random card asset from the collection
+// we want to fecth a random card asset from the collection 
 const generateRandomCardImage = () => allCards[Math.floor(Math.random() * (allCards.length - 1))];
 
 const img1 = generateRandomCardImage();
 const img2 = generateRandomCardImage();
 
+
 const Card = ({ card, title, restStyles, cardRef, playerTwo }) => {
     return (
         <Tilt>
-            <div className={`${styles.cardContainer} ${restStyles}`}>
+            <div ref={cardRef} /*@note needed for the placement of the animation*/ className={`${styles.cardContainer} ${restStyles}`}>
 
                 {/* Card img */}
                 <img

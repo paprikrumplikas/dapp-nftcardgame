@@ -61,12 +61,14 @@ function isEthereum() {
     };
   
     if (!isEthereum()) {
+      console.log("Ethereum provider not found, setting step to 0.");
       response.step = 0;
       return response;
     }
   
     const currentAccount = await requestAccount();
     if (currentAccount === 0x0) {
+      console.log("No accounts connected, setting step to 1");
       response.step = 1;
       return response;
     }
@@ -75,6 +77,7 @@ function isEthereum() {
   
     if (getChainID() !== 43113) {
       response.step = 2;
+      console.log(`Incorrect chain ID: ${chainId}, setting step to 2.`);
       return response;
     }
   
@@ -87,10 +90,13 @@ function isEthereum() {
     response.balance = currentBalance;
   
     if (currentBalance < 0.1) {
+      console.log(`Not enough balance, setting step to 3.`);
       response.step = 3;
       return response;
     }
   
+    console.log("All checks passed, setting step to 4");
+    response.step = 4;  // Explicitly set step to a positive value indicating success @note had to change to this
     return response;
   };
   

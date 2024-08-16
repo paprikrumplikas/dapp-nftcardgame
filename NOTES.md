@@ -1,8 +1,7 @@
    issues to fix:
 
-   1. tooltip on icons
-   2. connection to core wallet
-   3. auto-navigate to battle page
+   1. connection to core wallet
+   2. auto-navigate to create battle page after registration
    
    
    
@@ -11,7 +10,7 @@
    
    START PROJECT
    
-   4. web3
+   3. web3
       1. install older version of ethers
       npm install ethers@5.7.2 @nomiclabs/hardhat-ethers --save-dev --legacy-peer-deps
       2. install older version of openzeppelin
@@ -19,7 +18,7 @@
       3. install other dependencies
       4. install Core Wallet, a Chrome extension for Avax, change to testnet, fund it, export private key
 
-   5. client
+   4. client
       1. basic
          1. cd ./client
          2. npm init vite@latest
@@ -157,6 +156,16 @@
             2. import it in main.jsx
             3. Put a self-closing OnbaordMocal tag in main.jsx, above the router tags
             4. in the context (index.jsx), add a useEffect the resets web3 onboarding modal params
+
+         6. Local storage vs state @note
+            - State Persistence: The state does not persist beyond the component's lifecycle. When the component unmounts or the page reloads, the state is reset unless it's stored somewhere persistent (like local storage). 
+            - Local storage: Data stored in local storage persists across page reloads and even after the browser is closed and reopened.
+
+         7. Passing data through context vs prop drilling
+            - Prop drilling refers to passing data through multiple levels of a component tree by explicitly passing props from parent to child components, often through many intermediary components.
+            - React Context provides a way to share values (such as state) between components without having to explicitly pass props through every level of the component tree.
+
+
 
 ----------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------

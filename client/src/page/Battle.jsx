@@ -8,9 +8,17 @@ import { useGlobalContext } from '../context';
 import { attack, attackSound, defense, defenseSound, player01 as player01Icon, player02 as player02Icon } from "../assets";
 import { playAudio } from "../utils/animation.js";
 
+// array of all card assets
+// @note my solution for card images
+//import { allCards } from "../assets";
 
-function Battle() {
-    const { contract, gameData, walletAddress, showAlert, setShowAlert, battleGround, setErrorMessage } = useGlobalContext();
+
+// Generate a random card image
+// @note my solution for card images
+//const generateRandomCardImage = () => allCards[Math.floor(Math.random() * (allCards.length - 1))];
+
+const Battle = () => {
+    const { contract, gameData, walletAddress, showAlert, setShowAlert, battleGround, setErrorMessage, player1Ref, player2Ref, updateGameData } = useGlobalContext();
     const navigate = useNavigate();
 
     const [player1, setPlayer1] = useState({});
@@ -19,6 +27,29 @@ function Battle() {
     // @note  is a hook provided by React Router that allows you to access the parameters of the current route.
     //When a route is defined with parameters(e.g., /battle/: battleName), useParams can be used to extract these parameters inside the component that corresponds to that route.
     const { battleName } = useParams();
+
+
+    // Retrieve or generate card images
+    // i.e. for the very first time, we generate random card images for each player, then save those to local storage
+    // afterwards, if the page relaods, we just get the images from local storage
+    // @note my solution for card images
+    /* const getPersistedImage = (key, generatedImage) => {
+         const storedImage = localStorage.getItem(key);
+         if (storedImage) {
+             return storedImage;
+         } else {
+             const newImage = generatedImage;
+             localStorage.setItem(key, newImage);
+             return newImage;
+         }
+     };
+ 
+     const player1ImageKey = player1[0];
+     const player2ImageKey = player2[0];
+ 
+     const player1CardImage = getPersistedImage(player1ImageKey, generateRandomCardImage());
+     const player2CardImage = getPersistedImage(player2ImageKey, generateRandomCardImage());
+     */
 
 
     // happens when the contract / gameData / battleName changes
@@ -83,7 +114,9 @@ function Battle() {
 
         // if there is a contract and an active battle
         if (contract && gameData.activeBattle) getPlayerInfo();
-    }, [contract, gameData, battleName])
+
+        // @note added walletAddress to the dep array so that when connected address is changed playerInfo updates
+    }, [contract, gameData, battleName, walletAddress])
 
 
     const makeAMove = async (choice) => {
@@ -99,7 +132,7 @@ function Battle() {
             });
         } catch (error) {
             setErrorMessage(error);
-            //console.log(error);
+            console.log(error);
         }
 
     }
@@ -107,50 +140,68 @@ function Battle() {
 
 
     return (
-        <div className={`${styles.flexBetween} ${styles.gameContainer} ${battleGround}`}>
-
-            {/* if showAlert status exists (truthy), we are gonna show and alert component */}
-            {showAlert?.status && <Alert type={showAlert.type} message={showAlert.message} />}
-
-            <PlayerInfo player={player2} playerIcon={player02Icon} />
-
-            {/* div for the top card */}
-            {/* @note in ethers v6, playerAddress and playerName fields can be accessed like player1[0] and player1[0], not player1.playerAddress */}
-            <div className={`${styles.flexCenter} flex-col my-10`}>
-                <Card
-                    card={player2}
-                    title={player2?.[1]}
-                    cardRef=''
-                    playerTwo
-                />
-
-                {/* div for the bottom card, the left action button, right action button */}
-                <div className='flex items-center flex-row'>
-                    <ActionButton
-                        imgUrl={attack}
-                        handleClick={() => { makeAMove(1) }}
-                        restStyles="mr-2 hover:border-yellow-400"
-                    />
-
-                    <Card
-                        card={player1}
-                        title={player1?.[1]}
-                        cardRef=''
-                        restStyles="mt-3"
-                    />
-
-                    <ActionButton
-                        imgUrl={defense}
-                        handleClick={() => { makeAMove(2) }}
-                        restStyles="ml-6 hover:border-red-600"
-                    />
+        <div className={`flex flex-row items-center justify-center h-screen ${battleGround}`}>
+            <div className="h-80 w-40 flex items-center justify-center ml-50 bg-white bg-opacity-30 rounded-3xl">
+                <div className="transform rotate-90 text-3xl text-white">
+                    {`Round: ${updateGameData}`}
                 </div>
             </div>
 
-            <PlayerInfo player={player1} playerIcon={player01Icon} mt />
+            <div className={`${styles.flexBetween} ${styles.gameContainer}`}>
 
-            <GameInfo />
-        </div>
+                {/* if showAlert status exists (truthy), we are gonna show and alert component */}
+                {showAlert?.status && <Alert type={showAlert.type} message={showAlert.message} />}
+
+                <PlayerInfo player={player2} playerIcon={player02Icon} />
+
+                {/* div for the top card */}
+                {/* @note in ethers v6, playerAddress and playerName fields can be accessed like player1[0] and player1[0], not player1.playerAddress */}
+                <div className={`${styles.flexCenter} flex-col my-10`}>
+                    <Card
+                        card={player2}
+                        title={player2?.[1]}
+                        // @note needed for the placement of explosion animation
+                        cardRef={player2Ref}
+                        playerTwo
+                    // cardImage={player2.cardImg} // Pass the stored image     // @note my solution for card images
+                    />
+
+                    {/* div for the bottom card, the left action button, right action button */}
+                    <div className='flex items-center flex-row'>
+                        <ActionButton
+                            imgUrl={attack}
+                            handleClick={() => { makeAMove(1) }}
+                            restStyles="mr-2 hover:border-yellow-400"
+                        />
+
+                        <Card
+                            card={player1}
+                            title={player1?.[1]}
+                            cardRef={player1Ref}
+                            restStyles="mt-3"
+                        //cardImage={player1.cardImg} // Pass the stored image     // @note my solution for card images
+                        />
+
+                        <ActionButton
+                            imgUrl={defense}
+                            handleClick={() => { makeAMove(2) }}
+                            restStyles="ml-6 hover:border-red-600"
+                        />
+                    </div>
+                </div>
+
+                <PlayerInfo player={player1} playerIcon={player01Icon} mt />
+
+                <GameInfo />
+            </div>
+            <div className="h-80 w-40 flex items-center justify-center ml-50 bg-white bg-opacity-30 rounded-3xl">
+                <div className="transform rotate-90 text-3xl text-white">
+                    {`Round: ${updateGameData}`}
+                </div>
+            </div>
+
+        </div >
+
     )
 }
 

@@ -5,7 +5,7 @@ import styles from "../styles";
 
 // Function to extract a user-friendly error message
 const extractErrorMessage = (message) => {
-    console.log('Received message:', message); // Debug log to check the structure
+    //console.log('Received message:', message); // Debug log to check the structure
 
     // Check if message is an object and has nested info
     if (typeof message === 'object' && message !== null) {

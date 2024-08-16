@@ -15,7 +15,7 @@ const OnboardModal = () => {
     async function resetParams() {
         const currentStep = await GetParams();
         setStep(currentStep.step);
-        setIsOpen(currentStep.step !== -1);
+        setIsOpen(currentStep.step !== -1 && currentStep.step !== 4);   // @note had to change to this
     }
 
     useEffect(() => {

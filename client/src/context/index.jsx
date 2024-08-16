@@ -38,6 +38,11 @@ export const GlobalContextProvider = ({ children }) => {
     const [step, setStep] = useState(1);
     const [errorMessage, setErrorMessage] = useState("");
 
+    // @note needed for the placement of explosion animation
+    const player1Ref = useRef();
+    const player2Ref = useRef();
+
+
     const navigate = useNavigate();
 
     // @note checking the local storage for backgorund selection, so that when a user reloads the page, his chosen battleground does not change
@@ -57,15 +62,16 @@ export const GlobalContextProvider = ({ children }) => {
     //* @note Reset web3 onboarding modal params so the onboarding modal fully works
     useEffect(() => {
         const resetParams = async () => {
-            const currentStep = await GetParams();  // this function is comint from utils/onboard.js
+            const getParamsResponse = await GetParams();  // this function is coming from utils/onboard.js
 
-            setStep(currentStep.step);
+            setStep(getParamsResponse.step);
         }
 
-        // actually call the func
+        // actually call the func - initially, when the component mounts
         resetParams();
 
-        //
+        // @note After resetParams is called initially, the window.ethereum.on method sets up event listeners for chainChanged and accountChanged.
+        // These event listeners are independent of the useEffect hook and the dependency array.They will persist and remain active as long as the component is mounted.
         window?.ethereum?.on('chainChanged', () => resetParams());
         window?.ethereum?.on('accountChanged', () => resetParams());
 
@@ -121,11 +127,15 @@ export const GlobalContextProvider = ({ children }) => {
     // if step is -1, we are not ready for the game, we cannot call our function to call event listeners
     useEffect(() => {
         // if step is not -1 and contract exists, create event listener
+        console.log("step: ", step);
         if (step !== -1 && contract) {
+            console.log("creating event listeners");
+
             createEventListeners({
-                navigate, contract, provider,
+                navigate, contract,
                 walletAddress, setShowAlert,
                 setUpdateGameData,
+                player1Ref, player2Ref,
             });
         }
     }, [contract, step])
@@ -150,9 +160,7 @@ export const GlobalContextProvider = ({ children }) => {
         if (errorMessage) {
             const parsedErrorMessage = errorMessage?.reason;
 
-            console.log("hej");
             if (parsedErrorMessage) {
-                console.log("hej");
 
                 setShowAlert({
                     status: true,
@@ -201,7 +209,6 @@ export const GlobalContextProvider = ({ children }) => {
 
     {/* @note in the value object of the GlobalContext.Provider, we can pass all the value we want to share with every single component of the app*/ }
     {/* @note For this to work, we need to wrap our entire application with the GlobalContextProvider in main.jsx*/ }
-
     return (
         <GlobalContext.Provider value={{
             contract, walletAddress, provider,
@@ -210,6 +217,8 @@ export const GlobalContextProvider = ({ children }) => {
             gameData,
             battleGround, setBattleGround,
             errorMessage, setErrorMessage,
+            player1Ref, player2Ref,
+            updateGameData,
         }}>
             {/* @note If we dont have this, we dont return nothing, the page will be empty*/}
             {/* @note with specyfing {children}, we return everything we pass to our app*/}

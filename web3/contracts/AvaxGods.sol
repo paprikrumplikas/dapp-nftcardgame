@@ -289,6 +289,7 @@ contract AVAXGods is ERC1155, Ownable, ERC1155Supply {
 
     // User chooses attack or defense move for battle card
     function attackOrDefendChoice(uint8 _choice, string memory _battleName) external {
+        // get the specific instance of the battle
         Battle memory _battle = getBattle(_battleName);
 
         require(
@@ -303,9 +304,12 @@ contract AVAXGods is ERC1155, Ownable, ERC1155Supply {
         _registerPlayerMove(_battle.players[0] == msg.sender ? 0 : 1, _choice, _battleName);
 
         _battle = getBattle(_battleName);
+
+        // max no of moves is 0
         uint256 _movesLeft = 2 - (_battle.moves[0] == 0 ? 0 : 1) - (_battle.moves[1] == 0 ? 0 : 1);
         emit BattleMove(_battleName, _movesLeft == 1 ? true : false);
 
+        // if both players have made their moves
         if (_movesLeft == 0) {
             _awaitBattleResults(_battleName);
         }
@@ -336,6 +340,7 @@ contract AVAXGods is ERC1155, Ownable, ERC1155Supply {
     /// @dev Resolve battle function to determine winner and loser of battle
     /// @param _battle battle; battle to resolve
     function _resolveBattle(Battle memory _battle) internal {
+        // P is a struct, Has health, defense, attack, move, index
         P memory p1 = P(
             playerInfo[_battle.players[0]],
             _battle.moves[0],
