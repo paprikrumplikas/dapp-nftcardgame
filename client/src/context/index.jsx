@@ -77,20 +77,22 @@ export const GlobalContextProvider = ({ children }) => {
 
     }, [])
 
-    //* Set the wallet address to the state
-    const updateCurrentWalletAddress = async () => {
-        // @note this requestAccount results the wallet login window popping up
-        const accounts = await window.ethereum.request({
-            method: 'eth_requestAccounts'
-        });
-
-        // if exists, set state to the first account
-        if (accounts) setWalletAddress(accounts[0]);
-    }
 
 
     // @note to actually call updateCurrentWalletAddress. We want to call it only at the start, so the dependency array is gonna be empty like []
     useEffect(() => {
+        //* Set the wallet address to the state
+        const updateCurrentWalletAddress = async () => {
+            // @note this requestAccount results the wallet login window popping up
+            const accounts = await window.ethereum.request({
+                method: 'eth_requestAccounts'
+            });
+
+            // if exists, set state to the first account
+            if (accounts) setWalletAddress(accounts[0]);
+        }
+
+        // actually call the function
         updateCurrentWalletAddress();
 
         // but we also want to call it when account is changed in the wallet extension, so
@@ -173,9 +175,7 @@ export const GlobalContextProvider = ({ children }) => {
                     message: parsedErrorMessage
                 })
             }
-
         }
-
     }, [errorMessage]);
 
 
@@ -256,6 +256,7 @@ export const GlobalContextProvider = ({ children }) => {
 
 
     // @note for troubleshooting, to check if provider can retrieve basic bloachchain info
+    /*
     useEffect(() => {
         if (provider) {
             provider.getBlockNumber()
@@ -269,6 +270,7 @@ export const GlobalContextProvider = ({ children }) => {
             console.error("Provider is not initialized - xxxxxxxx.");
         }
     }, [provider]);
+    */
 
 
     // set the game data to the state - to check if the battle is active, and if the player is in a battle
@@ -301,7 +303,14 @@ export const GlobalContextProvider = ({ children }) => {
 
         // if contract exists, call the fetchGameData function
         if (contract) fetchGameData();
-    }, [contract, updateGameData, walletAddress]);  // @note added wallettAddress so that gameData is refreshed when accounts are switched and battle can proceed
+
+        // @note added walletAddress so that gameData is refreshed when accounts are switched and battle can proceed
+        // @note added gameData so that when a round ends, player stats get updated
+        /*When fetchGameData is called, it updates the gameData state using setGameData. However, this state update is asynchronous. This means that gameData doesn't immediately reflect the new values right after setGameData is called within the same execution cycle. This could lead to a situation where the next logic that depends on gameData still sees the old data.
+        Triggering the useEffect on gameData Change: By adding gameData to the dependency array, you ensure that whenever gameData is updated (i.e., whenever setGameData is called and the state actually changes), the useEffect hook re-runs. This causes fetchGameData to be called again, ensuring that the component is working with the most up-to-date gameData. */
+    }, [contract, updateGameData, walletAddress, gameData]);
+
+
 
 
     {/* @note in the value object of the GlobalContext.Provider, we can pass all the value we want to share with every single component of the app*/ }

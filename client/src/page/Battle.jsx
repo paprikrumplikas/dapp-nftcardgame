@@ -115,10 +115,11 @@ const Battle = () => {
         // if there is a contract and an active battle
         if (contract && gameData.activeBattle) getPlayerInfo();
 
-        // @note added walletAddress to the dep array so that when connected address is changed playerInfo updates
-    }, [contract, gameData, battleName, walletAddress])
+        // @note as defined in context, gameData changes whenever walletAddress or gameData changes
+    }, [contract, gameData, battleName])
 
 
+    // used and called in handleClick
     const makeAMove = async (choice) => {
         playAudio(choice === 1 ? attackSound : defenseSound);
 
