@@ -88,6 +88,7 @@ export const GlobalContextProvider = ({ children }) => {
         if (accounts) setWalletAddress(accounts[0]);
     }
 
+
     // @note to actually call updateCurrentWalletAddress. We want to call it only at the start, so the dependency array is gonna be empty like []
     useEffect(() => {
         updateCurrentWalletAddress();
@@ -118,6 +119,9 @@ export const GlobalContextProvider = ({ children }) => {
 
             setProvider(newProvider);
             setContract(newContract);
+
+            console.log("Provider set:", newProvider);
+            console.log("Contract set:", newContract);
         }
 
         // call this function as soon as the website loads
@@ -128,7 +132,7 @@ export const GlobalContextProvider = ({ children }) => {
     useEffect(() => {
         // if step is not -1 and contract exists, create event listener
         console.log("step: ", step);
-        if (step !== -1 && contract) {
+        if (step !== -1 && contract && provider) {
             console.log("creating event listeners");
 
             createEventListeners({
@@ -136,9 +140,10 @@ export const GlobalContextProvider = ({ children }) => {
                 walletAddress, setShowAlert,
                 setUpdateGameData,
                 player1Ref, player2Ref,
+                provider
             });
         }
-    }, [contract, step])
+    }, [contract, provider, step])
 
 
     useEffect(() => {
@@ -174,6 +179,98 @@ export const GlobalContextProvider = ({ children }) => {
     }, [errorMessage]);
 
 
+    // logging for troubleshooting @note
+    useEffect(() => {
+        console.log("using effect");
+        const fetchRegisteredPlayers = async () => {
+            const fetchedRegisteredPlayers = (await contract.getAllPlayers()).slice(1);   // slice the first element which is always 0
+            const registeredPlayerNames = fetchedRegisteredPlayers.map((player => player[1]));
+            console.log("Names of registered players: ", registeredPlayerNames);
+
+            const playersInGame = fetchedRegisteredPlayers.filter((player) => player.inBattle === true);   // returns a struct-like thing
+            const playerNamesInGame = playersInGame.map((player) => player[1]);
+            const playerAddressesInGame = playersInGame.map((player) => player[0]);
+
+            console.log("Names of players in game, ", playerNamesInGame);
+            console.log("Addresses of players in game, ", playerAddressesInGame);
+
+        }
+
+        const fetchGameData = async () => {
+            const fetchedBattles = (await contract.getAllBattles()).slice(1); // slice the first element which is always 0
+            const allBattleNames = fetchedBattles.map((battle) => battle[2]);
+            console.log("All battles: ", allBattleNames);
+
+            const pendingBattles = fetchedBattles.filter((battle) => battle.battleStatus === 0n);
+            // console.log("Pendng battles: ", pendingBattles);
+
+            // Log battle names together with player addresses
+            const pendingBattlesAndTheirPlayers = pendingBattles.map((battle) => {
+                const battleName = battle[2]; // Battle name
+                const playerAddress = battle[3][0]; // First player's address in the battle
+                return `${battleName}, ${playerAddress}`;
+            });
+            console.log("Pending battles and their players: ", pendingBattlesAndTheirPlayers);
+
+            const activeBattles = fetchedBattles.filter((battle) => battle.battleStatus === 1n);
+            // console.log("Active battle objects ", activeBattles);
+            // Log battle names together with player addresses
+            const activeBattlesAndTheirPlayers = activeBattles.map((battle) => {
+                const battleName = battle[2]; // Battle name
+                const player1Address = battle[3][0]; // First player's address in the battle
+                const player2Address = battle[3][1]; // Second player's address in the battle
+                return `${battleName}, ${player1Address}  ${player2Address}`;
+            });
+            console.log("Active battles and their players: ", activeBattlesAndTheirPlayers);
+
+
+            if (activeBattles.length > 0) {
+                const battle = activeBattles[0]; // Assuming there's only one active battle for this example
+                const playerAddresses = battle[3]; // Array of player addresses
+                const moves = battle[4]; // Array of moves
+
+                // Determine which player comes next
+                let nextPlayerMessage;
+                if (moves[0] === 0n && moves[1] === 0n) {
+                    nextPlayerMessage = "Any of the players can make the next move.";
+                } else if (moves[0] === 0n) {
+                    nextPlayerMessage = `Next player to move: ${playerAddresses[0]}`; // First player hasn't moved yet
+                } else if (moves[1] === 0n) {
+                    nextPlayerMessage = `Next player to move: ${playerAddresses[1]}`; // Second player hasn't moved yet
+                } else {
+                    nextPlayerMessage = "Both players have already moved.";
+                }
+
+                console.log(nextPlayerMessage);
+            }
+        }
+
+
+        if (contract) {
+            fetchRegisteredPlayers();
+            fetchGameData();
+        }
+
+    }, [contract]);
+
+
+
+    // @note for troubleshooting, to check if provider can retrieve basic bloachchain info
+    useEffect(() => {
+        if (provider) {
+            provider.getBlockNumber()
+                .then(blockNumber => {
+                    console.log("Current block number - xxxxxxxxxx:", blockNumber);
+                })
+                .catch(error => {
+                    console.error("Failed to fetch block number - xxxxxxxxxxx:", error);
+                });
+        } else {
+            console.error("Provider is not initialized - xxxxxxxx.");
+        }
+    }, [provider]);
+
+
     // set the game data to the state - to check if the battle is active, and if the player is in a battle
     // gonna be executed whenever the contract or the setGameData var changes; see dependency array
     useEffect(() => {
@@ -204,7 +301,7 @@ export const GlobalContextProvider = ({ children }) => {
 
         // if contract exists, call the fetchGameData function
         if (contract) fetchGameData();
-    }, [contract, updateGameData])
+    }, [contract, updateGameData, walletAddress]);  // @note added wallettAddress so that gameData is refreshed when accounts are switched and battle can proceed
 
 
     {/* @note in the value object of the GlobalContext.Provider, we can pass all the value we want to share with every single component of the app*/ }

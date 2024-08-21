@@ -52,7 +52,7 @@ const CreateBattle = () => {
 
     return (
         <>
-            {/* if waitBattle is ture, load the GameLoad component */}
+            {/* if waitBattle is true, load the GameLoad component */}
             {waitBattle && <GameLoad />}
 
             <div className='flex flex-col'>
