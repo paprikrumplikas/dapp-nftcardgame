@@ -32,6 +32,9 @@ export const GlobalContextProvider = ({ children }) => {
     const [gameData, setGameData] = useState({
         players: [], pendingBattles: [], activeBattle: null
     });
+    // trigger/flag that causes certain useEffect to re-run.
+    // flag is updated when new battle event or when round ended event is emitted
+    // when it updates, triggers the useEffect with fetchGameData
     const [updateGameData, setUpdateGameData] = useState(0);
     // battlegrounf of the battle page. State needed in battle and battleground pages
     const [battleGround, setBattleGround] = useState('bg-astral');
@@ -142,18 +145,19 @@ export const GlobalContextProvider = ({ children }) => {
                 walletAddress, setShowAlert,
                 setUpdateGameData,
                 player1Ref, player2Ref,
-                provider
+                provider,
+                fetchGameData,
             });
         }
     }, [contract, provider, step])
 
 
     useEffect(() => {
-        // if the alert shows (alert status is true), set a timer, show the alert for 10s, then close the alert, reset it
+        // if the alert shows (alert status is true), set a timer, show the alert for 3s, then close the alert, reset it
         if (showAlert?.status) {
             const timer = setTimeout(() => {
                 setShowAlert({ status: false, type: 'info', message: '' })
-            }, 10000)
+            }, 3000)
 
             // clear timer
             return () => clearTimeout(timer);
@@ -162,7 +166,7 @@ export const GlobalContextProvider = ({ children }) => {
     }, [showAlert]);
 
 
-    // @note handle error messages
+    // @note handle error messages. If there is a new error message, it displays it as an alert
     useEffect(() => {
         if (errorMessage) {
             const parsedErrorMessage = errorMessage?.reason;
@@ -179,8 +183,73 @@ export const GlobalContextProvider = ({ children }) => {
     }, [errorMessage]);
 
 
-    // logging for troubleshooting @note
+
+
+
+
+    // @note for troubleshooting, to check if provider can retrieve basic bloachchain info
+    /*
     useEffect(() => {
+        if (provider) {
+            provider.getBlockNumber()
+                .then(blockNumber => {
+                    console.log("Current block number - xxxxxxxxxx:", blockNumber);
+                })
+                .catch(error => {
+                    console.error("Failed to fetch block number - xxxxxxxxxxx:", error);
+                });
+        } else {
+            console.error("Provider is not initialized - xxxxxxxx.");
+        }
+    }, [provider]);
+    */
+
+
+    const fetchGameData = async () => {
+        const fetchedBattles = await contract.getAllBattles();
+        // filter those active battles that are pending (signified by status '0', but bigInt 0, i.e. 0n)
+        const pendingBattles = fetchedBattles.filter((battle) => battle.battleStatus === 0n);
+        const ongoingBattles = fetchedBattles.filter((battle) => battle.battleStatus === 1n);
+        let activeBattle = null;    // i.e. the ongoing battle that is displayed
+
+        ongoingBattles.forEach((battle) => {
+            // check if the player has the same address as the wallet in the browser
+            if (battle.players.find((player) => player.toLowerCase() === walletAddress.toLowerCase())) {
+                // if there is no winner yet
+                if (battle.winner.startsWith('0x00')) {
+                    activeBattle = battle;
+                }
+            }
+        })
+
+        // updating the state with the game data
+        // slicing pendingBattles[], as the 0th entry is always one filled with 0s
+        setGameData({ pendingBattles: pendingBattles.slice(1), activeBattle });
+
+        // @note this will not work, state updates in React are asynchronous, meaning that gameData is not updated immediately after calling setGameData
+        // console.log("active battle status 2: ", gameData.activeBattle.battleStatus);
+
+    }
+
+
+    // set the game data to the state - to check if the battle is active, and if the player is in a battle
+    // gonna be executed whenever the contract or the setGameData var changes; see dependency array
+    useEffect(() => {
+        // if contract exists, call the fetchGameData function
+        if (contract) {
+            fetchGameData();
+            console.log("updating game data via fecthGameData");
+        }
+
+        // @note added walletAddress so that gameData is refreshed when accounts are switched and battle can proceed
+        // @note added gameData so that when a round ends, player stats get updated. But adding it causing an infitinite loop
+    }, [contract, updateGameData, walletAddress]);
+
+
+
+
+    // logging for troubleshooting @note
+    /*useEffect(() => {
         console.log("using effect");
         const fetchRegisteredPlayers = async () => {
             const fetchedRegisteredPlayers = (await contract.getAllPlayers()).slice(1);   // slice the first element which is always 0
@@ -251,66 +320,31 @@ export const GlobalContextProvider = ({ children }) => {
             fetchGameData();
         }
 
-    }, [contract]);
+    }, [contract]); */
 
 
 
-    // @note for troubleshooting, to check if provider can retrieve basic bloachchain info
-    /*
+    // logging for troubleshooting. Logs every 10 s
     useEffect(() => {
-        if (provider) {
-            provider.getBlockNumber()
-                .then(blockNumber => {
-                    console.log("Current block number - xxxxxxxxxx:", blockNumber);
-                })
-                .catch(error => {
-                    console.error("Failed to fetch block number - xxxxxxxxxxx:", error);
-                });
-        } else {
-            console.error("Provider is not initialized - xxxxxxxx.");
-        }
-    }, [provider]);
-    */
+        const interval = setInterval(() => {
+            console.log("UPDATE GAMEDATA VALUE: ", updateGameData);
+            if (gameData?.activeBattle) {
+                // console.log("Battle Name:", gameData.activeBattle.name);
+                console.log("Battle Status:", gameData.activeBattle.battleStatus);
+                // console.log("Winner:", gameData.activeBattle.winner);
+            } else {
+                console.log("xxxx No active battle or gameData is not loaded yet.");
+            }
+        }, 10000); // Logs every 10 seconds
+
+        // Clean up the interval on component unmount
+        return () => clearInterval(interval);
+    }, [gameData]);
 
 
-    // set the game data to the state - to check if the battle is active, and if the player is in a battle
-    // gonna be executed whenever the contract or the setGameData var changes; see dependency array
     useEffect(() => {
-        const fetchGameData = async () => {
-            const fetchedBattles = await contract.getAllBattles();
-            // filter those active battles that are pending (signified by status '0', but bigInt 0, i.e. 0n)
-            const pendingBattles = fetchedBattles.filter((battle) => battle.battleStatus === 0n);
-            let activeBattle = null;
-
-            fetchedBattles.forEach((battle) => {
-                // check if the player has the same address as the wallet in the browser
-                if (battle.players.find((player) => player.toLowerCase() === walletAddress.toLowerCase())) {
-                    // if there is no winner yet
-                    if (battle.winner.startsWith('0x00')) {
-                        activeBattle = battle;
-                    }
-                }
-            })
-
-            // updating the state with the game data
-            // slicing pendingBattles[], as the 0th entry is always one filled with 0s
-            setGameData({ pendingBattles: pendingBattles.slice(1), activeBattle });
-
-            // @note this will not work, state updates in React are asynchronous, meaning that gameData is not updated immediately after calling setGameData
-            // console.log("active battle status 2: ", gameData.activeBattle.battleStatus);
-
-        }
-
-        // if contract exists, call the fetchGameData function
-        if (contract) fetchGameData();
-
-        // @note added walletAddress so that gameData is refreshed when accounts are switched and battle can proceed
-        // @note added gameData so that when a round ends, player stats get updated
-        /*When fetchGameData is called, it updates the gameData state using setGameData. However, this state update is asynchronous. This means that gameData doesn't immediately reflect the new values right after setGameData is called within the same execution cycle. This could lead to a situation where the next logic that depends on gameData still sees the old data.
-        Triggering the useEffect on gameData Change: By adding gameData to the dependency array, you ensure that whenever gameData is updated (i.e., whenever setGameData is called and the state actually changes), the useEffect hook re-runs. This causes fetchGameData to be called again, ensuring that the component is working with the most up-to-date gameData. */
-    }, [contract, updateGameData, walletAddress, gameData]);
-
-
+        console.log("gameData updated----------------------------------: ", gameData);
+    }, [gameData]);
 
 
     {/* @note in the value object of the GlobalContext.Provider, we can pass all the value we want to share with every single component of the app*/ }
@@ -325,6 +359,7 @@ export const GlobalContextProvider = ({ children }) => {
             errorMessage, setErrorMessage,
             player1Ref, player2Ref,
             updateGameData,
+            fetchGameData,
         }}>
             {/* @note If we dont have this, we dont return nothing, the page will be empty*/}
             {/* @note with specyfing {children}, we return everything we pass to our app*/}

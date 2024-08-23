@@ -8,7 +8,7 @@ import { useGlobalContext } from '../context';
 import { PageHOC, CustomButton, CustomInput, GameLoad } from "../components";
 
 const CreateBattle = () => {
-    const { contract, battleName, setBattleName, gameData, setErrorMessage } = useGlobalContext();
+    const { contract, battleName, setBattleName, gameData, setErrorMessage, fetchGameData } = useGlobalContext();
     const [waitBattle, setWaitBattle] = useState(false);
     const navigate = useNavigate();
 
@@ -19,8 +19,9 @@ const CreateBattle = () => {
     // and useEffect runs again
     // @note 1n and 0n in the conditionals. battleStatus is a long int, hence the need for the n
     useEffect(() => {
-        // check if battle is already set up (with 2 players). If yes, redirect to the battle page
-        if (gameData?.activeBattle?.battleStatus === 1n) {
+        // check if battle is already set up (with 2 players), i.e. battleStatus is 1n. If yes, redirect to the battle page
+        // @note added a second condition, otherwise due to async updates, after exiting the battle and subsequent redirect to create-battle page, we end up on the battle page again
+        if (gameData?.activeBattle?.battleStatus === 1n && gameData.activeBattle.winner === "0x0000000000000000000000000000000000000000") {
             navigate(`/battle/${gameData.activeBattle.name}`);
         }
         // check if the current logged in player created a battle or not
@@ -34,7 +35,11 @@ const CreateBattle = () => {
         } else {
             console.log("No active battle or gameData is not loaded yet.");
         }
+
     }, [gameData])
+
+
+
 
     const handleClick = async () => {
         // if the user did not fill in the field, just return
@@ -49,6 +54,8 @@ const CreateBattle = () => {
             setErrorMessage(error);
         }
     }
+
+
 
     return (
         <>

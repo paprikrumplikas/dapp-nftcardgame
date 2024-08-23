@@ -9,11 +9,38 @@ import styles from "../styles"
 
 
 const GameInfo = () => {
-    const { contract, gameData, setShowAlwert } = useGlobalContext();
+    const { contract, gameData, setShowAlert, setErrorMessage, fetchGameData } = useGlobalContext();
     const [toggleSideBar, setToggleSideBar] = useState(false);
     const navigate = useNavigate();
 
-    const handleBattleExit = async () => { }
+    // exit function
+    const handleBattleExit = async () => {
+        const battleName = gameData.activeBattle.name;
+
+        setShowAlert({
+            status: true,
+            type: 'info',
+            message: `You are quitting battle "${battleName}".... With this, you are gonna lose.`
+        })
+
+        try {
+            // this sets the quitting player as the loser on the blockchain, and resets other player data
+            // the contract is gonna emit a BattleEnded event which is gonna picked up by an event listener to renavigate users to the create battle page
+            // await contract.quitBattle(battleName);
+
+            console.log("In GameInfo...");
+
+
+            const tx = await contract.quitBattle(battleName);   // gonna emite BattleEnded
+            console.log("In GameInfo, initiating tx.");
+            await tx.wait(); // Wait for the transaction to be mined
+
+            console.log("In GameInfo, tx mined.");
+
+        } catch (error) {
+            setErrorMessage(error);
+        }
+    }
 
     return (
         <>
@@ -66,7 +93,7 @@ const GameInfo = () => {
                     />
                     <CustomButton
                         title="Exit battle"
-                        handleClick={() => { handleBattleExit }}
+                        handleClick={() => { handleBattleExit() }}
                     />
                 </div>
             </div>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, /*useNavigate*/ } from "react-router-dom";  // @note useNavigate is not used in this file
 
 import styles from "../styles";
 import { Alert, ActionButton, Card, GameInfo, PlayerInfo } from "../components";
@@ -19,7 +19,7 @@ import { playAudio } from "../utils/animation.js";
 
 const Battle = () => {
     const { contract, gameData, walletAddress, showAlert, setShowAlert, battleGround, setErrorMessage, player1Ref, player2Ref, updateGameData } = useGlobalContext();
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
 
     const [player1, setPlayer1] = useState({});
     const [player2, setPlayer2] = useState({});
@@ -115,8 +115,9 @@ const Battle = () => {
         // if there is a contract and an active battle
         if (contract && gameData.activeBattle) getPlayerInfo();
 
-        // @note as defined in context, gameData changes whenever walletAddress or gameData changes
-    }, [contract, gameData, battleName])
+        // @note as defined in context, gameData changes whenever walletAddress or updateGameData changes
+        // @note nonetheless, added updateGameData to check
+    }, [contract, gameData, battleName, updateGameData])
 
 
     // used and called in handleClick

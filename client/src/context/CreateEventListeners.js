@@ -6,6 +6,8 @@ import { defenseSound } from "../assets";
 
 import { WebSocketProvider} from "ethers/providers";
 
+// import { useNavigate } from 'react-router-dom';   - @note not needed, passed down as a param
+
 
 const emptyAccount ='0x0000000000000000000000000000000000000000';
 
@@ -13,7 +15,7 @@ const emptyAccount ='0x0000000000000000000000000000000000000000';
 // cb is for callback function 
 // @note when the event we listen to is emitted, the listener is triggered and cb is executed
 const AddNewEvent = (eventFilter, wsContract, cb) => {
-    console.log(`Adding listener for event: ${eventFilter.fragment.name}`);
+    // console.log(`Adding listener for event: ${eventFilter.fragment.name}`);
     // ensures that there are no multiple listeners for the same event at the same time
     // i.e. before we add a new one we remove the previosu ones
     wsContract.off(eventFilter);  // @note specific to ethers v6
@@ -50,7 +52,7 @@ const getCoords = (cardRef) => {
 
 
 // contract, provider, walletAddress are not defined UNTIL we add this function to the context
-export const createEventListeners = async ({navigate, contract, walletAddress, setShowAlert, updateGameData, setUpdateGameData, player1Ref, provider, player2Ref}) => {
+export const createEventListeners = async ({navigate, contract, walletAddress, setShowAlert, updateGameData, setUpdateGameData, player1Ref, provider, player2Ref, fetchGameData}) => {
 
     const wsProvider = new WebSocketProvider("wss://api.avax-test.network/ext/bc/C/ws");
 
@@ -78,7 +80,7 @@ export const createEventListeners = async ({navigate, contract, walletAddress, s
     // call the func we created above. Args is the arguments passed on by the emitted event, like emit NewPlayer(player);
     AddNewEvent(NewPlayerEventFilter, contract, ({args}) => {
         // log so that we know the event happened
-        console.log("New player created", args);
+        console.log("EVENT LISTENER: New player created", args);
 
         if(walletAddress === args.owner) {
             setShowAlert({
@@ -87,7 +89,7 @@ export const createEventListeners = async ({navigate, contract, walletAddress, s
                 message: 'Player has been successfully registered.'
             });
             // redirect to next page after registration
-            navigate(`/create-battle`);
+            navigate('/create-battle');
 
         }
     })
@@ -97,7 +99,7 @@ export const createEventListeners = async ({navigate, contract, walletAddress, s
     const NewBattleEventFilter = wsContract.filters.NewBattle();
     AddNewEvent(NewBattleEventFilter, wsContract, ({args}) => {
         // log so that we know the event happened
-        console.log("New battle started", args, walletAddress);
+        console.log("EVENT LISTENER: New battle started", args, walletAddress);
 
         // check if walletAddres is our player1 or player2
         if(walletAddress.toLowerCase() === args.player1.toLowerCase() || walletAddress.toLowerCase() === args.player2.toLowerCase()) {
@@ -113,14 +115,14 @@ export const createEventListeners = async ({navigate, contract, walletAddress, s
     // filter for moves
     const BattleMoveEventFilter = wsContract.filters.BattleMove();
     AddNewEvent(BattleMoveEventFilter, wsContract, ({args}) => {
-        console.log("Battle move initiated: ", args);
+        console.log("EVENT LISTENER: Battle move initiated: ", args);
     });
 
     
     // filter for round ended
     const RoundEndedFilter = wsContract.filters.RoundEnded();
     AddNewEvent(RoundEndedFilter, wsContract, ({args}) => {
-        console.log("Round ended ", args, walletAddress);
+        console.log("EVENT LISTENER: Round ended ", args, walletAddress);
 
         for(let i=0; i<args.damagedPlayers.length; i+=1){
             // if somebody got damaged
@@ -129,11 +131,11 @@ export const createEventListeners = async ({navigate, contract, walletAddress, s
                 // @note bug fix if addresses are net uniformly set to lowercase when doing a comparison, then the animation gets always displayed on the top card
                 if(args.damagedPlayers[i].toLowerCase() === walletAddress.toLowerCase()) {
                     // i.e. damaged player is the one who is connected, with the card at the bottom
-                    console.log("Damaged player: ", args.damagedPlayers[i], walletAddress);
+                    console.log("EVENT LISTENER: Damaged player: ", args.damagedPlayers[i], walletAddress);
                     // @note needed for the placement of explosion animation
                     sparcle(getCoords(player1Ref));
                 } else if (args.damagedPlayers[i].toLowerCase() !== walletAddress.toLowerCase()) {
-                    console.log("Damaged player - xxxxxxxxx: ", args.damagedPlayers[i], walletAddress);
+                    console.log("EVENT LISTENER: Damaged player:: ", args.damagedPlayers[i], walletAddress);
                     sparcle(getCoords(player2Ref));
                 }
             } else {    // if nobody got damaged
@@ -144,10 +146,61 @@ export const createEventListeners = async ({navigate, contract, walletAddress, s
         // @note we want to update game data status each time something happens:
         // multiple useStates in index.jsx has the 'updateGameData" it their dependency arrays
         setUpdateGameData((prevUpdateGameData) => prevUpdateGameData + 1);
-        console.log("In eventlisteners, round: ", updateGameData);
+        console.log("EVENT LISTENER: round: ", updateGameData);
     });
 
 
+    // filter for exit battle
+    const BattleEndedFilter = wsContract.filters.BattleEnded();
+    AddNewEvent(BattleEndedFilter, wsContract, async ({args}) => {
+        console.log('EVENT LISTENER: Battle ended', args, walletAddress);
+
+        if(walletAddress.toLowerCase() === args.winner.toLowerCase()) {
+            setShowAlert({
+                status: true,
+                type: 'success',
+                message: 'You won!'
+            });
+        } else if (walletAddress.toLowerCase() === args.loser.toLowerCase()) {
+            setShowAlert({
+                status: true,
+                type: 'failure',
+                message: 'You lost!'
+            })
+        }
+
+        /** @note this delay is needed to wait for the quitBattle tx to be mined          
+         * otherwise the BattleEnded event is emitted before the tx is included in the blockchain (should not really happen, but it does anyway) 
+         * which would update setUpdateGameData -> gameData, and gameData would have stale values
+         * and based on these stale values we would be renavigated to the battle page
+         */ 
+        /**
+         * @note how an event seems to be emitted before the tx is fully confirmed
+         * Node Synchronization:
+         * If you're interacting with different nodes (e.g., one node for broadcasting transactions and another for listening to events), there might be a synchronization issue where one node believes an event has occurred, but the transaction hasn't been fully confirmed on the network.
+         * In a WebSocket-based setup, the provider might receive events faster than the transaction confirmation due to the way different nodes process and propagate information.
+         * 
+         * And this is exactly what happens: I initate the tx with metamask through a https rpc rpovider, and then my listeners are using a websocket rpc provider!!!
+         * If your Metamask (HTTPS provider) is connected to one Ethereum node and your WebSocket provider is connected to another node, there might be a slight delay or difference in what each node sees. The WebSocket node might detect the event as soon as it’s broadcasted on the network, even before the transaction is confirmed.
+         * https://chatgpt.com/c/dcd46df9-485b-458a-b70d-220169005d92
+         */
+        console.log("EVENT LISTENER: BattleEnded, timeout starts before updating UpdateGameData.");
+        setTimeout(async () => {
+            console.log("EVENT LISTENER: now updating UpdateGameData");
+            setUpdateGameData((prevUpdateGameData) => prevUpdateGameData + 1);
+        }, 12000); // Adjust the delay time as necessary
+
+        /** @note for safety, adding some more delay before the navitagtion happens,
+         * so we give time to react to update the states setUpdateGamedata and gameData with the values from the blockchain
+         */ 
+        console.log("EVENT LISTENER: BattleEnded, will navigate now to create battle page.");
+        setTimeout(async () => {
+            navigate('/create-battle');
+            console.log("EVENT LISTENER: Navigated to create battle page.");
+        }, 13000); // Adjust the delay time as necessary
+
+
+    })
 
         /*
     // @note Start monitoring blocks and logs

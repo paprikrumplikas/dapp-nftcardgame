@@ -8,7 +8,7 @@ import styles from "../styles"
 
 const JoinBattle = () => {
     const navigate = useNavigate();
-    const { gameData, contract, setShowAlert, setBattleName, walletAddress, setErrorMessage } = useGlobalContext();
+    const { gameData, contract, setShowAlert, setBattleName, walletAddress, setErrorMessage, fetchGameData } = useGlobalContext();
 
 
     /* const renderCount = useRef(0);
@@ -24,12 +24,15 @@ const JoinBattle = () => {
         setBattleName(battleName);
 
         try {
-            await contract.joinBattle(battleName);
+            const tx = await contract.joinBattle(battleName);
+            const receipt = await tx.wait(); // Wait for the transaction to be mined
+
+            fetchGameData();
 
             setShowAlert({
                 status: true,
                 type: "success",
-                message: `Joining ${battleName}`
+                message: `Joining battle "${battleName}"`
             })
         } catch (error) {
             //console.log(error);
