@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 // to be import Home and Battle on a single line, we first need to create an index.jsx where both are imported separatley and then exported together
-import { Home, CreateBattle, JoinBattle, Battle, Battleground } from "./page";
+import { Home, CreateBattle, JoinBattle, Battle, Battleground, Leaderboard } from "./page";
 import { GlobalContextProvider } from './context';
 import './index.css';
 import { OnboardModal } from "./components";
@@ -23,6 +23,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/join-battle" element={<JoinBattle />} />
         <Route path="/battle/:battleName" element={<Battle />} />
         <Route path="/battleground" element={<Battleground />} />
+        <Route path="/leaderboard" element={<Leaderboard />} />
       </Routes>
     </GlobalContextProvider>
   </BrowserRouter >,

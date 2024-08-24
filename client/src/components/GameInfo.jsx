@@ -92,9 +92,15 @@ const GameInfo = () => {
                         handleClick={() => navigate('/battleground')}
                     />
                     <CustomButton
+                        title="Leaderboard"
+                        handleClick={() => { navigate('/leaderboard') }}
+                    />
+                    <CustomButton
                         title="Exit battle"
                         handleClick={() => { handleBattleExit() }}
                     />
+
+
                 </div>
             </div>
         </>

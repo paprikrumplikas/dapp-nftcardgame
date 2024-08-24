@@ -4,7 +4,6 @@ import { useGlobalContext } from '../context';
 
 // higher order component (can wrap another component)
 import { PageHOC, CustomInput, CustomButton } from "../components";
-import { Navigate } from 'react-router-dom';
 //import { ContractFactory } from 'ethers';
 
 

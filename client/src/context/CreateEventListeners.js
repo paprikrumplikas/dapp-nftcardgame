@@ -76,9 +76,9 @@ export const createEventListeners = async ({navigate, contract, walletAddress, s
 
 
     // filtering 1st event (NewPlayer) from a specified contract
-    const NewPlayerEventFilter = contract.filters.NewPlayer();
+    const NewPlayerEventFilter = wsContract.filters.NewPlayer();
     // call the func we created above. Args is the arguments passed on by the emitted event, like emit NewPlayer(player);
-    AddNewEvent(NewPlayerEventFilter, contract, ({args}) => {
+    AddNewEvent(NewPlayerEventFilter, wsContract, ({args}) => {
         // log so that we know the event happened
         console.log("EVENT LISTENER: New player created", args);
 
@@ -89,13 +89,34 @@ export const createEventListeners = async ({navigate, contract, walletAddress, s
                 message: 'Player has been successfully registered.'
             });
             // redirect to next page after registration
-            navigate('/create-battle');
+            // navigate('/create-battle');
 
         }
-    })
+    });
+
+ 
+
+    // event listener for newGameTokenEventFilter
+    const NewGameTokenEventFilter = wsContract.filters.NewGameToken();
+    AddNewEvent(NewGameTokenEventFilter, wsContract, ({args}) => {
+        console.log("EVENT LISTENER: New game token created, args");
+
+        // is the account we are currently connected to the account that we created the token for
+        if(walletAddress.toLowerCase() === args.owner.toLowerCase()) {
+            setShowAlert({
+                status: true,
+                type: 'success',
+                message: 'Player game token has been successfully created'
+            })
+        }
+
+        // onece the player is registered and has its game token, it is ready to battle, so we navigate
+        navigate('/create-battle');
+    });
 
 
-    // 2nd event. Goal is to navigate both players to the battle page
+
+    // 3rd event. Goal is to navigate both players to the battle page
     const NewBattleEventFilter = wsContract.filters.NewBattle();
     AddNewEvent(NewBattleEventFilter, wsContract, ({args}) => {
         // log so that we know the event happened
@@ -124,29 +145,33 @@ export const createEventListeners = async ({navigate, contract, walletAddress, s
     AddNewEvent(RoundEndedFilter, wsContract, ({args}) => {
         console.log("EVENT LISTENER: Round ended ", args, walletAddress);
 
-        for(let i=0; i<args.damagedPlayers.length; i+=1){
-            // if somebody got damaged
-            if (args.damagedPlayers[i] !== emptyAccount) {
+        setTimeout(async () => {
+            for(let i=0; i<args.damagedPlayers.length; i+=1){
+                // if somebody got damaged
+                if (args.damagedPlayers[i] !== emptyAccount) {
 
-                // @note bug fix if addresses are net uniformly set to lowercase when doing a comparison, then the animation gets always displayed on the top card
-                if(args.damagedPlayers[i].toLowerCase() === walletAddress.toLowerCase()) {
-                    // i.e. damaged player is the one who is connected, with the card at the bottom
-                    console.log("EVENT LISTENER: Damaged player: ", args.damagedPlayers[i], walletAddress);
-                    // @note needed for the placement of explosion animation
-                    sparcle(getCoords(player1Ref));
-                } else if (args.damagedPlayers[i].toLowerCase() !== walletAddress.toLowerCase()) {
-                    console.log("EVENT LISTENER: Damaged player:: ", args.damagedPlayers[i], walletAddress);
-                    sparcle(getCoords(player2Ref));
+                    // @note bug fix if addresses are net uniformly set to lowercase when doing a comparison, then the animation gets always displayed on the top card
+                    if(args.damagedPlayers[i].toLowerCase() === walletAddress.toLowerCase()) {
+                        // i.e. damaged player is the one who is connected, with the card at the bottom
+                        console.log("EVENT LISTENER: Damaged player: ", args.damagedPlayers[i], walletAddress);
+                        // @note needed for the placement of explosion animation
+                        sparcle(getCoords(player1Ref));
+                    } else if (args.damagedPlayers[i].toLowerCase() !== walletAddress.toLowerCase()) {
+                        console.log("EVENT LISTENER: Damaged player:: ", args.damagedPlayers[i], walletAddress);
+                        sparcle(getCoords(player2Ref));
+                    }
+                } else {    // if nobody got damaged
+                    playAudio(defenseSound);
                 }
-            } else {    // if nobody got damaged
-                playAudio(defenseSound);
             }
-        }
 
-        // @note we want to update game data status each time something happens:
-        // multiple useStates in index.jsx has the 'updateGameData" it their dependency arrays
-        setUpdateGameData((prevUpdateGameData) => prevUpdateGameData + 1);
-        console.log("EVENT LISTENER: round: ", updateGameData);
+            // @note we want to update game data status each time something happens:
+            // multiple useStates in index.jsx has the 'updateGameData" it their dependency arrays
+            setUpdateGameData((prevUpdateGameData) => prevUpdateGameData + 1);
+            console.log("EVENT LISTENER: round: ", updateGameData);
+
+        }, 15000); // Adjust the delay time as necessary
+
     });
 
 
@@ -169,7 +194,7 @@ export const createEventListeners = async ({navigate, contract, walletAddress, s
             })
         }
 
-        /** @note this delay is needed to wait for the quitBattle tx to be mined          
+        /** @note @crucial this delay is needed to wait for the quitBattle tx to be mined          
          * otherwise the BattleEnded event is emitted before the tx is included in the blockchain (should not really happen, but it does anyway) 
          * which would update setUpdateGameData -> gameData, and gameData would have stale values
          * and based on these stale values we would be renavigated to the battle page

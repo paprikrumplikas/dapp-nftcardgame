@@ -7,6 +7,7 @@ import CreateBattle from "./CreateBattle";
 import JoinBattle from "./JoinBattle";
 import Battle from "./Battle";
 import Battleground from "./Battleground";
+import Leaderboard from "./Leaderboard";
 
 
 
@@ -16,4 +17,5 @@ export {
     JoinBattle,
     Battle,
     Battleground,
+    Leaderboard,
 }

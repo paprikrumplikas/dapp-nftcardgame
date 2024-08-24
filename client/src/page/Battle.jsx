@@ -126,6 +126,8 @@ const Battle = () => {
 
 
         try {
+            // @note @syntax @bugfix after all the params we can pass a special options param, like {gasLimit: 500000}
+            // we use this to increase the gasLimit, as tx sometimes failed
             await contract.attackOrDefendChoice(choice, battleName);
             setShowAlert({
                 status: true,

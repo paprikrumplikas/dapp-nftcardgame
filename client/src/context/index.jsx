@@ -78,23 +78,26 @@ export const GlobalContextProvider = ({ children }) => {
         window?.ethereum?.on('chainChanged', () => resetParams());
         window?.ethereum?.on('accountChanged', () => resetParams());
 
-    }, [])
+    }, []);
+
+
+
+    //* Set the wallet address to the state
+    // need to be outside the useEffect that actually call it, as we need to pass it through the context for web3modal
+    const updateCurrentWalletAddress = async () => {
+        // @note this requestAccount results the wallet login window popping up
+        const accounts = await window.ethereum.request({
+            method: 'eth_requestAccounts'
+        });
+
+        // if exists, set state to the first account
+        if (accounts) setWalletAddress(accounts[0]);
+    }
 
 
 
     // @note to actually call updateCurrentWalletAddress. We want to call it only at the start, so the dependency array is gonna be empty like []
     useEffect(() => {
-        //* Set the wallet address to the state
-        const updateCurrentWalletAddress = async () => {
-            // @note this requestAccount results the wallet login window popping up
-            const accounts = await window.ethereum.request({
-                method: 'eth_requestAccounts'
-            });
-
-            // if exists, set state to the first account
-            if (accounts) setWalletAddress(accounts[0]);
-        }
-
         // actually call the function
         updateCurrentWalletAddress();
 
@@ -360,6 +363,7 @@ export const GlobalContextProvider = ({ children }) => {
             player1Ref, player2Ref,
             updateGameData,
             fetchGameData,
+            updateCurrentWalletAddress /*@crucial this is used in the OnboardModal*/
         }}>
             {/* @note If we dont have this, we dont return nothing, the page will be empty*/}
             {/* @note with specyfing {children}, we return everything we pass to our app*/}
