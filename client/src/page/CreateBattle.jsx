@@ -77,8 +77,11 @@ const CreateBattle = () => {
                     restStyles="mt-6"
                 />
             </div>
-
-            <p className={styles.infoText} onClick={() => navigate('/join-battle')}>Or join already existing battles.</p >
+            <p
+                className={`${styles.infoText} mt-12`} // Combine custom class with the Tailwind class
+                onClick={() => navigate('/join-battle')}>
+                Or join already existing battles.
+            </p >
         </>
     );
 };

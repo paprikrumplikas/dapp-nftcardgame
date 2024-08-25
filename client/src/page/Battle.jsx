@@ -18,13 +18,16 @@ import { playAudio } from "../utils/animation.js";
 //const generateRandomCardImage = () => allCards[Math.floor(Math.random() * (allCards.length - 1))];
 
 const Battle = () => {
-    const { contract, gameData, walletAddress, showAlert, setShowAlert, battleGround, setErrorMessage, player1Ref, player2Ref, updateGameData } = useGlobalContext();
+    const { contract, gameData, walletAddress, showAlert, setShowAlert, battleGround, setErrorMessage, player1Ref, player2Ref, updateGameData, round } = useGlobalContext();
     // const navigate = useNavigate();
 
     const [player1, setPlayer1] = useState({});
     const [player2, setPlayer2] = useState({});
 
-    // @note  is a hook provided by React Router that allows you to access the parameters of the current route.
+    const [nextPlayer, setNextPlayer] = useState('');
+
+
+    // @note @crucial @learning useParams() is a hook provided by React Router that allows you to access the parameters of the current route.
     //When a route is defined with parameters(e.g., /battle/: battleName), useParams can be used to extract these parameters inside the component that corresponds to that route.
     const { battleName } = useParams();
 
@@ -120,10 +123,10 @@ const Battle = () => {
     }, [contract, gameData, battleName, updateGameData])
 
 
+
     // used and called in handleClick
     const makeAMove = async (choice) => {
         playAudio(choice === 1 ? attackSound : defenseSound);
-
 
         try {
             // @note @syntax @bugfix after all the params we can pass a special options param, like {gasLimit: 500000}
@@ -138,16 +141,55 @@ const Battle = () => {
             setErrorMessage(error);
             console.log(error);
         }
-
     }
+
+
+    // determine the next player
+    useEffect(() => {
+        const determineNextPlayer = async (battleName) => {
+            console.log("hej-----1");
+
+            const battleStruct = await contract.getBattle(battleName);
+            const moves = battleStruct[4]; // Array of moves
+            const players = battleStruct[3];
+
+            // Determine which player comes next
+            let whoseTurn = "Next player: either";
+
+            console.log("hej-----2");
+
+            if (moves[0] === 0n && moves[1] === 0n) {
+                whoseTurn = "Next player: either"
+            } else if (moves[0] === 0n) {
+                if (players[0].toLowerCase() === walletAddress) {
+                    whoseTurn = "Your turn!";
+                } else {
+                    whoseTurn = "Their turn!";
+                }
+            } else if (moves[1] === 0n) {
+                if (players[1].toLowerCase() === walletAddress) {
+                    whoseTurn = "Your turn!";
+                } else {
+                    whoseTurn = "Their turn!";
+                }
+            }
+
+            setNextPlayer(whoseTurn);
+            console.log("Next player to move:", whoseTurn);    // @note logging not state which might be stale at this point, but a local var
+        };
+
+        if (contract && battleName) determineNextPlayer(battleName);
+
+    }, [battleName, walletAddress, updateGameData]);
+
 
 
 
     return (
         <div className={`flex flex-row items-center justify-center h-screen ${battleGround}`}>
-            <div className="h-80 w-40 flex items-center justify-center ml-50 bg-white bg-opacity-30 rounded-3xl">
+            <div className="h-80 w-40 flex items-center justify-center bg-white bg-opacity-30 rounded-3xl">
                 <div className="transform rotate-90 text-3xl text-white">
-                    {`Round: ${updateGameData}`}
+                    {`Round ${round}`}
                 </div>
             </div>
 
@@ -198,9 +240,9 @@ const Battle = () => {
 
                 <GameInfo />
             </div>
-            <div className="h-80 w-40 flex items-center justify-center ml-50 bg-white bg-opacity-30 rounded-3xl">
-                <div className="transform rotate-90 text-3xl text-white">
-                    {`Round: ${updateGameData}`}
+            <div className="h-80 w-40 flex items-center justify-center bg-white bg-opacity-30 rounded-3xl">
+                <div className="transform rotate-90 text-3xl text-white whitespace-nowrap">
+                    {nextPlayer}
                 </div>
             </div>
 

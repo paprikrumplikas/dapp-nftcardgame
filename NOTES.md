@@ -59,7 +59,7 @@
 ----------------------------------------------------------------------------------------------------------------------------
 
 
-   ALERTS:
+   ALERTS - How they work
 
    1. Alert.jsx: This is indeed where the alert component is defined. The component takes type and message as props and renders the alert accordingly.
    2. index.jsc (GlobalContextProvider): This is where the state for showAlert is defined and managed. The GlobalContextProvider manages the state of the alert and provides setShowAlert to other components so they can trigger alerts. It also contains logic to automatically hide the alert after 10 seconds.
@@ -79,8 +79,6 @@
 ----------------------------------------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------------------------------------------
 
-
-   ALERTS:
 
    TRICKS
 
@@ -164,6 +162,109 @@
          7. Passing data through context vs prop drilling
             - Prop drilling refers to passing data through multiple levels of a component tree by explicitly passing props from parent to child components, often through many intermediary components.
             - React Context provides a way to share values (such as state) between components without having to explicitly pass props through every level of the component tree.
+  
+         8. useRefs and positioning of the animation
+            https://chatgpt.com/c/bb2c2bdf-ed71-4d15-bd6e-799490c79402
+
+
+         9. alerts: see above
+   
+         10. Event listeners - why use websocket provider instead of https provider  
+            From troubleshooitng: Event Listeners Not Triggered. https://chatgpt.com/c/7924e0f7-915e-434b-ac36-85bf4c7b451d 
+            Original Problem:
+
+            The event listener was set up with the following code, but the event was never triggered:
+
+            javascript
+            Copy code
+            contract.on(eventFilter, (Logs) => {
+               console.log(`Event listener triggered for: ${eventFilter.fragment.name}`);
+               const parsedLog = contract.interface.parseLog(Logs);
+               cb(parsedLog);
+            });
+
+            Cause:
+            The issue was due to using an HTTPS RPC provider instead of a WebSocket provider. Event listeners for real-time events do not work as expected with an HTTPS provider.
+            Why HTTPS Provider Failed:
+
+            Polling vs. Subscriptions: @note
+            HTTPS Provider: Operates on a request-response model. It does not maintain a persistent connection and cannot push events to the client. The client would need to continuously poll the blockchain for new events, which is inefficient and prone to missing events that occur between polling intervals.
+            WebSocket Provider: Maintains an open, persistent connection. This allows the Ethereum node to push events to the client as soon as they are emitted, ensuring real-time updates. This makes WebSocket providers ideal for applications that need immediate responses to on-chain events, such as games or financial applications.
+
+            HTTPS operates on a request-response basis, meaning the client has to ask the server if there are any new events. This polling approach is not real-time and can lead to missed events or delays in processing events. @note
+
+            Resolution:
+            Switching to a WebSocket provider allowed the event listener to function correctly because the WebSocket provider could actively listen for and immediately trigger the callback when an event was emitted by the smart contract.
+
+        11. Parsing Logs and Execution Flow
+            From troubleshooting
+            Original Problem:
+
+            Even after switching to a WebSocket provider, the following line wasn’t executing as expected:
+
+            javascript
+            Copy code
+            const parsedLog = contract.interface.parseLog(Logs);
+            This led to the callback function not being triggered, and no further logs were printed.
+
+            Cause:
+
+            The parseLog function was failing because the Logs object being passed into it did not have the correct structure. Specifically, parseLog expected the topics and data properties at the top level, but these were nested inside the log property of the Logs object.
+            Why the Parsing Failed:
+
+            Structure Mismatch: The Logs object contained the necessary data, but it was nested inside a sub-object (log). The parseLog function needs direct access to the topics and data properties to correctly parse the event log.
+            Error Handling: When parseLog fails due to incorrect input, it throws an error. If this error is not caught, it prevents the subsequent code from executing, which is why the callback wasn’t triggered and the "Parsed log" message wasn’t printed. @note
+            Resolution:
+
+            The code was adjusted to correctly access the necessary properties within the Logs object:
+
+            javascript
+            Copy code
+            const logDetails = Logs.log; // Access the correct sub-objectconst parsedLog = contract.interface.parseLog(logDetails);
+            Error Handling: We wrapped the parsing logic in a try-catch block to catch and handle any errors that occur during the parsing process. This ensures that if parseLog fails, the error is logged, but the program can continue executing or handle the failure gracefully.
+
+
+            12. Async vs snyc functions
+
+            So... code in a single async function is executed syncronously meanding that each line is executed one after each other. But if there are other functions, those can start their execution while the async func waits for the promise to be resolved
+            ChatGPT said:
+            ChatGPT
+            Yes, that's correct! Let's summarize this:
+
+            Execution Inside an async Function:
+            Within an async function, the code runs sequentially, meaning each line is executed one after the other. If a line includes await, the function will pause at that point until the promise is resolved before moving on to the next line.
+            Sequential Execution: Inside the async function, once await resolves, the next lines are executed in order. This makes the code within that async function behave in a synchronous-like manner.
+            Execution Outside the async Function:
+            Non-blocking Behavior: While the async function is waiting (because of an await), other functions or code outside of this async function can continue to execute. This is what makes async functions non-blocking.
+            Concurrency: This means that while one async function is waiting for a promise to resolve (e.g., a network request or a timeout), other code (including other async functions) can execute in parallel.
+
+
+            13. promises in assync functions
+            In JavaScript, when you perform operations that involve things like network requests, database queries, or file reading—essentially anything that might take some time and isn’t instantaneous—the functions that perform these operations return a promise. This is because JavaScript is designed to be non-blocking, meaning it doesn't want to stop everything else just to wait for something that might take a while.
+
+
+            14. race conditions, stale data, using different providers for listening and broadcasting for event emission @note @crucial
+            If the event seems to be emitted before the transaction is fully mined, that could be bacaue
+            If you're interacting with different nodes (e.g., one node for broadcasting transactions and another for listening to events), there might be a synchronization issue where one node believes an event has occurred, but the transaction hasn't been fully confirmed on the network
+            https://chatgpt.com/c/dcd46df9-485b-458a-b70d-220169005d92
+            meaning that if I initate the tx with metamask through a https rpc rpovider, and then my listeners are using a websocket rpc provider?
+            ChatGPT said:
+            ChatGPT
+            Yes, that's exactly the kind of situation that can lead to the issue you're describing. Here's a more detailed explanation:
+            Using Different RPC Providers (HTTPS vs. WebSocket):
+               Transaction Broadcast via Metamask (HTTPS RPC Provider):
+                  When you initiate a transaction through Metamask, it typically broadcasts the transaction using an HTTPS RPC provider. This transaction is then propagated to the Ethereum network, but it’s initially placed in the mempool (a pool of unconfirmed transactions) until it gets included in a block by a miner.
+               Event Listening via WebSocket RPC Provider:
+                  Your event listeners, which are using a WebSocket RPC provider, are often connected to a different Ethereum node or even the same node but over a different communication channel (WebSocket instead of HTTPS).
+                  WebSocket connections are generally faster for real-time event listening because they maintain an open connection, allowing for immediate push notifications from the node when events occur.
+
+
+         15. Taliwind margins
+         The difference in margin between mt-18 and mt-20 in Tailwind CSS can be explained by the spacing scale that Tailwind uses. Tailwind's spacing utilities (mt, mb, ml, mr, p, m, etc.) follow a specific scale, which means that not all numeric values between 1 and 20 are included.
+
+         Tailwind CSS Spacing Scale
+         Tailwind CSS uses a pre-defined spacing scale that typically includes values like mt-1, mt-2, mt-4, mt-8, mt-16, mt-20, etc. However, it doesn't define every number in between. For instance, mt-18 is not part of the default spacing scale, so it may fall back to a smaller value, or it may not be applied as expected.
+
 
 
 

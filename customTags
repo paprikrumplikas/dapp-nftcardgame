@@ -1,0 +1,81 @@
+# to be placed to Preferences user settings JSON
+
+{
+  "workbench.colorTheme": "Default Dark Modern",
+  "solidity.telemetry": true,
+  "editor.formatOnSave": true,
+  "editor.inlineSuggest.enabled": true,
+  "liveServer.settings.CustomBrowser": "firefox",
+  "liveServer.settings.useLocalIp": true,
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": false,
+    "markdown": false,
+    "scminput": false
+  },
+  "security.allowedUNCHosts": [
+    "wsl.localhost"
+  ],
+  "[markdown]": {
+    "editor.wordWrap": "off",
+    "editor.wordWrapColumn": 160
+  },
+  "editor.wordWrapColumn": 240,
+  "solidity.formatter": "forge",
+  "todohighlight.keywords": [
+    {
+      "text": "@pattern",
+      "color": "#00FFFF",
+      "backgroundColor": "transparent",
+      "overviewRulerColor": "#00FFFF"
+    },
+    {
+      "text": "@math",
+      "color": "#FF00FF",
+      "backgroundColor": "transparent",
+      "overviewRulerColor": "#FF00FF"
+    },
+    {
+      "text": "@learning",
+      "color": "#00FF00",
+      "backgroundColor": "transparent",
+      "overviewRulerColor": "#00FF00"
+    },
+    {
+      "text": "@syntax",
+      "color": "#FFFF00",
+      "backgroundColor": "transparent",
+      "overviewRulerColor": "#FFFF00"
+    },
+    {
+      "text": "@bugfix",
+      "color": "#FFA500",
+      "backgroundColor": "transparent",
+      "overviewRulerColor": "#FFA500"
+    },
+    {
+      "text": "@custom",
+      "color": "#FF69B4",
+      "backgroundColor": "transparent",
+      "overviewRulerColor": "#FF69B4"
+    },
+    {
+      "text": "@crucial",
+      "color": "#FF4500",
+      "backgroundColor": "transparent",
+      "overviewRulerColor": "#FF4500"
+    },
+    {
+      "text": "@sth",
+      "color": "#EE82EE",
+      "backgroundColor": "transparent",
+      "overviewRulerColor": "#EE82EE"
+    },
+    {
+      "text": "@xmg",
+      "color": "#FFD700",
+      "backgroundColor": "transparent",
+      "overviewRulerColor": "#FFD700"
+    }
+  ]
+}

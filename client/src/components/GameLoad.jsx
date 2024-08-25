@@ -8,6 +8,8 @@ import { useGlobalContext } from '../context';
 import { player01, player02 } from "../assets";
 import styles from "../styles";
 
+import { shortenAddress } from '../utils/shortenAddress';
+
 const GameLoad = () => {
     const { walletAddress } = useGlobalContext();
     const navigate = useNavigate();
@@ -34,14 +36,14 @@ const GameLoad = () => {
                     <div className={`${styles.flexCenter} flex-col`}>
                         <img src={player01} className={styles.gameLoadPlayerImg} />
                         <p className={styles.gameLoadPlayerText}>
-                            {walletAddress.slice(0, 30)}
+                            {shortenAddress(walletAddress)}
                         </p>
                     </div>
                     <h2 className={styles.gameLoadVS}>Vs</h2>
                     <div className={`${styles.flexCenter} flex-col`}>
                         <img src={player02} className={styles.gameLoadPlayerImg} />
                         <p className={styles.gameLoadPlayerText}>
-                            ????????????????????????????
+                            0x?????...?????
                         </p>
                     </div>
                 </div>

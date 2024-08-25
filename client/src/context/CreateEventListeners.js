@@ -52,7 +52,7 @@ const getCoords = (cardRef) => {
 
 
 // contract, provider, walletAddress are not defined UNTIL we add this function to the context
-export const createEventListeners = async ({navigate, contract, walletAddress, setShowAlert, updateGameData, setUpdateGameData, player1Ref, provider, player2Ref, fetchGameData}) => {
+export const createEventListeners = async ({navigate, contract, walletAddress, setShowAlert, updateGameData, setUpdateGameData, player1Ref, provider, player2Ref, setRound}) => {
 
     const wsProvider = new WebSocketProvider("wss://api.avax-test.network/ext/bc/C/ws");
 
@@ -129,6 +129,12 @@ export const createEventListeners = async ({navigate, contract, walletAddress, s
             // update game data (e.g. instead of pending battle, set in battle)
             // get access to the previous UpdateGameData: prevUpdateGameData
             setUpdateGameData((prevUpdateGameData) => prevUpdateGameData + 1);
+
+            setRound(1);    // init roundcounter @custom
+
+            // @custom, needed to remove the stored card images
+            localStorage.removeItem('img1');
+            localStorage.removeItem('img2');
         }
     }); 
 
@@ -136,7 +142,12 @@ export const createEventListeners = async ({navigate, contract, walletAddress, s
     // filter for moves
     const BattleMoveEventFilter = wsContract.filters.BattleMove();
     AddNewEvent(BattleMoveEventFilter, wsContract, ({args}) => {
+
+        setTimeout(async () => {    // @custom, needed to increment roundCounter
         console.log("EVENT LISTENER: Battle move initiated: ", args);
+        setUpdateGameData((prevUpdateGameData) => prevUpdateGameData + 1);  
+        }, 15000);
+
     });
 
     
@@ -145,7 +156,23 @@ export const createEventListeners = async ({navigate, contract, walletAddress, s
     AddNewEvent(RoundEndedFilter, wsContract, ({args}) => {
         console.log("EVENT LISTENER: Round ended ", args, walletAddress);
 
-        setTimeout(async () => {
+        setShowAlert({
+            status: true,
+            type: 'info',
+            message: 'Round ended, waiting for the outcome...'
+        });
+
+        setTimeout(async () => {    // @custom, needed so the block is mined before we proceed
+
+            // increment the round number
+            // @learning @syntax When you use setRound with a function, the function receives the previous state (prevRound) as an argument, and it expects you to return the new state value. This is how React knows what the new state should be.
+            setRound((prevRound) => {
+                const newRound = prevRound + 1;
+                //localStorage.setItem('roundNumber', newRound); @note setting to local storage is done in index.jsx with a useEffect trigger on change in 'round'
+                return newRound;
+            }); 
+
+
             for(let i=0; i<args.damagedPlayers.length; i+=1){
                 // if somebody got damaged
                 if (args.damagedPlayers[i] !== emptyAccount) {
@@ -184,13 +211,13 @@ export const createEventListeners = async ({navigate, contract, walletAddress, s
             setShowAlert({
                 status: true,
                 type: 'success',
-                message: 'You won!'
+                message: 'You won! Now navigating to the updated leaderboard...'
             });
         } else if (walletAddress.toLowerCase() === args.loser.toLowerCase()) {
             setShowAlert({
                 status: true,
                 type: 'failure',
-                message: 'You lost!'
+                message: 'You lost! Now navigating to the updated leaderboard...'
             })
         }
 
@@ -220,7 +247,7 @@ export const createEventListeners = async ({navigate, contract, walletAddress, s
          */ 
         console.log("EVENT LISTENER: BattleEnded, will navigate now to create battle page.");
         setTimeout(async () => {
-            navigate('/create-battle');
+            navigate('/leaderboard');
             console.log("EVENT LISTENER: Navigated to create battle page.");
         }, 13000); // Adjust the delay time as necessary
 

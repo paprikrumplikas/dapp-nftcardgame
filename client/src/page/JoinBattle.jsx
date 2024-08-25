@@ -24,16 +24,19 @@ const JoinBattle = () => {
         setBattleName(battleName);
 
         try {
+
+            setShowAlert({
+                status: true,
+                type: "success",
+                message: `Joining battle "${battleName}"...`
+            })
+
             const tx = await contract.joinBattle(battleName);
             const receipt = await tx.wait(); // Wait for the transaction to be mined
 
             fetchGameData();
 
-            setShowAlert({
-                status: true,
-                type: "success",
-                message: `Joining battle "${battleName}"`
-            })
+
         } catch (error) {
             //console.log(error);
             setErrorMessage(error);

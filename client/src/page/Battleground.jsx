@@ -22,7 +22,7 @@ const Battleground = () => {
         setShowAlert({ status: true, type: 'info', message: `${ground.name} is ready!` });
 
         setTimeout(() => {
-            // @note navigate where we came from
+            // @note navigate where we came from @syntax
             navigate(-1);
         }, 1000)
     }

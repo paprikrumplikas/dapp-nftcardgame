@@ -65,10 +65,10 @@ const styles = {
     gameLoadVS: 'font-rajdhani font-extrabold text-siteViolet text-7xl mx-16',
   
     // gameInfo component
-    gameInfoIconBox: 'absolute right-2 top-1/2',
-    gameInfoIcon: 'bg-siteViolet w-10 h-10 rounded-md cursor-pointer',
+    gameInfoIconBox: 'absolute right-2 top-2',
+    gameInfoIcon: 'bg-siteViolet w-12 h-12 rounded-md cursor-pointer',
     gameInfoIconImg: 'w-3/5 h-3/5 object-contain invert',
-    gameInfoSidebar: 'absolute p-6 right-0 top-0 h-screen rounded-md flex-col transition-all ease-in duration-300',
+    gameInfoSidebar: 'absolute p-6 right-0 top-0 h-3/4 rounded-3xl flex-col transition-all ease-in duration-300',
     gameInfoSidebarCloseBox: 'flex justify-end mb-8',
     gameInfoSidebarClose: 'w-10 h-10 rounded-md bg-siteViolet text-white font-rajdhani font-extrabold text-xl cursor-pointer',
     gameInfoHeading: 'font-rajdhani font-bold text-white text-3xl',

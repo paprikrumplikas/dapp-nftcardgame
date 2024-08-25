@@ -86,7 +86,7 @@ const GameInfo = () => {
                     </div>
                 </div>
 
-                <div className={`${styles.flexBetween} mt-10 gap-4 w--full`}>
+                <div className={`${styles.flexBetween} mt-10 gap-4`}>
                     <CustomButton
                         title="Change battleground"
                         handleClick={() => navigate('/battleground')}

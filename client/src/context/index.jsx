@@ -41,12 +41,35 @@ export const GlobalContextProvider = ({ children }) => {
     const [step, setStep] = useState(1);
     const [errorMessage, setErrorMessage] = useState("");
 
+    // to keep track of what round we are in
+    /** @crucial @note 
+    * 0. The argument passed to useState can be a function, which is executed only once when the component mounts. This is known as lazy initialization and is useful when the initial state requires some computation, such as fetching data from localStorage.
+    * 1. localStorage stores data as strings
+    * 2. parseInt(savedRound, 10): converts the string stored in localStorage to an integer using parseInt. The 10 is the radix (base) for the conversion, meaning it converts the string to a base-10 integer.
+    * 3. If savedRound does not exist or is 0, it is set to 1.
+    */
+    // @note this works only if there is one single ongoing battle
+    const [round, setRound] = useState(() => {      // qwert
+        const savedRound = localStorage.getItem('roundNumber');
+        return savedRound ? parseInt(savedRound, 10) : 1;
+    });
+
     // @note needed for the placement of explosion animation
     const player1Ref = useRef();
     const player2Ref = useRef();
 
 
     const navigate = useNavigate();
+
+    // save round to local storage
+    useEffect(() => {   //qwert
+        if (round > 0) {
+            localStorage.setItem('roundNumber', round);
+        }
+    }, [round]);
+
+
+
 
     // @note checking the local storage for backgorund selection, so that when a user reloads the page, his chosen battleground does not change
     // this local storage is set in Battleground
@@ -149,7 +172,7 @@ export const GlobalContextProvider = ({ children }) => {
                 setUpdateGameData,
                 player1Ref, player2Ref,
                 provider,
-                fetchGameData,
+                setRound,
             });
         }
     }, [contract, provider, step])
@@ -160,7 +183,7 @@ export const GlobalContextProvider = ({ children }) => {
         if (showAlert?.status) {
             const timer = setTimeout(() => {
                 setShowAlert({ status: false, type: 'info', message: '' })
-            }, 3000)
+            }, 5000)
 
             // clear timer
             return () => clearTimeout(timer);
@@ -184,7 +207,6 @@ export const GlobalContextProvider = ({ children }) => {
             }
         }
     }, [errorMessage]);
-
 
 
 
@@ -249,8 +271,6 @@ export const GlobalContextProvider = ({ children }) => {
     }, [contract, updateGameData, walletAddress]);
 
 
-
-
     // logging for troubleshooting @note
     /*useEffect(() => {
         console.log("using effect");
@@ -258,24 +278,24 @@ export const GlobalContextProvider = ({ children }) => {
             const fetchedRegisteredPlayers = (await contract.getAllPlayers()).slice(1);   // slice the first element which is always 0
             const registeredPlayerNames = fetchedRegisteredPlayers.map((player => player[1]));
             console.log("Names of registered players: ", registeredPlayerNames);
-
+ 
             const playersInGame = fetchedRegisteredPlayers.filter((player) => player.inBattle === true);   // returns a struct-like thing
             const playerNamesInGame = playersInGame.map((player) => player[1]);
             const playerAddressesInGame = playersInGame.map((player) => player[0]);
-
+ 
             console.log("Names of players in game, ", playerNamesInGame);
             console.log("Addresses of players in game, ", playerAddressesInGame);
-
+ 
         }
-
+ 
         const fetchGameData = async () => {
             const fetchedBattles = (await contract.getAllBattles()).slice(1); // slice the first element which is always 0
             const allBattleNames = fetchedBattles.map((battle) => battle[2]);
             console.log("All battles: ", allBattleNames);
-
+ 
             const pendingBattles = fetchedBattles.filter((battle) => battle.battleStatus === 0n);
             // console.log("Pendng battles: ", pendingBattles);
-
+ 
             // Log battle names together with player addresses
             const pendingBattlesAndTheirPlayers = pendingBattles.map((battle) => {
                 const battleName = battle[2]; // Battle name
@@ -283,7 +303,7 @@ export const GlobalContextProvider = ({ children }) => {
                 return `${battleName}, ${playerAddress}`;
             });
             console.log("Pending battles and their players: ", pendingBattlesAndTheirPlayers);
-
+ 
             const activeBattles = fetchedBattles.filter((battle) => battle.battleStatus === 1n);
             // console.log("Active battle objects ", activeBattles);
             // Log battle names together with player addresses
@@ -294,13 +314,13 @@ export const GlobalContextProvider = ({ children }) => {
                 return `${battleName}, ${player1Address}  ${player2Address}`;
             });
             console.log("Active battles and their players: ", activeBattlesAndTheirPlayers);
-
-
+ 
+ 
             if (activeBattles.length > 0) {
                 const battle = activeBattles[0]; // Assuming there's only one active battle for this example
                 const playerAddresses = battle[3]; // Array of player addresses
                 const moves = battle[4]; // Array of moves
-
+ 
                 // Determine which player comes next
                 let nextPlayerMessage;
                 if (moves[0] === 0n && moves[1] === 0n) {
@@ -312,17 +332,17 @@ export const GlobalContextProvider = ({ children }) => {
                 } else {
                     nextPlayerMessage = "Both players have already moved.";
                 }
-
+ 
                 console.log(nextPlayerMessage);
             }
         }
-
-
+ 
+ 
         if (contract) {
             fetchRegisteredPlayers();
             fetchGameData();
         }
-
+ 
     }, [contract]); */
 
 
@@ -363,7 +383,8 @@ export const GlobalContextProvider = ({ children }) => {
             player1Ref, player2Ref,
             updateGameData,
             fetchGameData,
-            updateCurrentWalletAddress /*@crucial this is used in the OnboardModal*/
+            updateCurrentWalletAddress, /*@crucial this is used in the OnboardModal*/
+            round, setRound,
         }}>
             {/* @note If we dont have this, we dont return nothing, the page will be empty*/}
             {/* @note with specyfing {children}, we return everything we pass to our app*/}

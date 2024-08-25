@@ -1,19 +1,13 @@
 import React from 'react';
 import { useNavigate } from "react-router-dom";
 
-import { useGlobalContext } from '../context';
 import { logo, heroImg } from "../assets";
 import styles from "../styles";
-import Alert from "./Alert";
-
-
 
 // HOCs are for reusability. We are gonna use this layout for quite many pages
 // @note diff between higher order components and regular ones is that HOC func components accept other lower level func components as a first input param. Esentially, they act as a wrapper for the lower level component.
 // @note => () => : function inside a function
 const PageHOC = (Component, title, description) => () => {
-    const { showAlert } = useGlobalContext();
-
     // initilaize navigate hook
     // @note useNavigate is a hook that sets up and returns a function (navigate) to perform the navigation when needed. It cannot be called directly to navigate
     const navigate = useNavigate();
@@ -21,8 +15,6 @@ const PageHOC = (Component, title, description) => () => {
     return (
         // styles.hocContainer is a CSS module, an object (not a class name applied diectly as a string), hence the curly braces
         <div className={styles.hocContainer}>
-            {/* if showAlert status exists (truthy), we are gonna show and alert component */}
-            {showAlert?.status && <Alert type={showAlert.type} message={showAlert.message} />}
             {/* click on logo navigates to homepage */}
             <div className={styles.hocContentBox}>
                 <img src={logo} alt="logo" className={styles.hocLogo} onClick={() => navigate('/')} />

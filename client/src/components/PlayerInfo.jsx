@@ -2,6 +2,8 @@ import ReactTooltip from "react-tooltip";
 import styles from "../styles";
 import { UNSAFE_DataRouterStateContext } from "react-router-dom";
 
+import { shortenAddress } from "../utils/shortenAddress";
+
 const healthPoints = 25;
 
 // determines the background color of the health bar based on the player's health points.
@@ -73,7 +75,7 @@ const PlayerInfo = ({ player, playerIcon, mt }) => {
                 </p>
                 <p className={styles.playerInfo}>
                     <span className={styles.playerInfoSpan}>Address: </span>
-                    {player?.[0]?.slice(1, 10) || "N/A"}
+                    {shortenAddress(player?.[0]) || "N/A"}
                 </p>
             </ReactTooltip>
 
