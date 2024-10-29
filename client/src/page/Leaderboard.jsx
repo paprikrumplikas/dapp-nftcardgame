@@ -24,7 +24,7 @@ const Leaderboard = () => {
             const registeredPlayerNames = fetchedRegisteredPlayers.map((player => player[1]));
 
             const fetchedBattles = (await contract.getAllBattles()).slice(1); // slice the first element which is always 0
-            const finishedBattles = fetchedBattles.filter((battle) => battle.battleStatus === 2n);
+            const finishedBattles = fetchedBattles.filter((battle) => battle.battleStatus === BigInt(2));
 
             const leaderboard = {};
             let winnerAddress;

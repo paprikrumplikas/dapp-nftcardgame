@@ -96,7 +96,7 @@ function isEthereum() {
     }
   
     console.log("All checks passed, setting step to 4");
-    response.step = 4;  // Explicitly set step to a positive value indicating success @note had to change to this
+    response.step = 4;  // Explicitly set step to a positive value indicating success @crucial @note had to change to this
     return response;
   };
   

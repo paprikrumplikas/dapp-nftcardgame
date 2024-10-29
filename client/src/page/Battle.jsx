@@ -158,15 +158,15 @@ const Battle = () => {
 
             console.log("hej-----2");
 
-            if (moves[0] === 0n && moves[1] === 0n) {
+            if (moves[0] === BigInt(0) && moves[1] === BigInt(0)) {
                 whoseTurn = "Next player: either"
-            } else if (moves[0] === 0n) {
+            } else if (moves[0] === BigInt(0)) {
                 if (players[0].toLowerCase() === walletAddress) {
                     whoseTurn = "Your turn!";
                 } else {
                     whoseTurn = "Their turn!";
                 }
-            } else if (moves[1] === 0n) {
+            } else if (moves[1] === BigInt(0)) {
                 if (players[1].toLowerCase() === walletAddress) {
                     whoseTurn = "Your turn!";
                 } else {

@@ -233,8 +233,8 @@ export const GlobalContextProvider = ({ children }) => {
     const fetchGameData = async () => {
         const fetchedBattles = await contract.getAllBattles();
         // filter those active battles that are pending (signified by status '0', but bigInt 0, i.e. 0n)
-        const pendingBattles = fetchedBattles.filter((battle) => battle.battleStatus === 0n);
-        const ongoingBattles = fetchedBattles.filter((battle) => battle.battleStatus === 1n);
+        const pendingBattles = fetchedBattles.filter((battle) => battle.battleStatus === BigInt(0));
+        const ongoingBattles = fetchedBattles.filter((battle) => battle.battleStatus === BigInt(1));
         let activeBattle = null;    // i.e. the ongoing battle that is displayed
 
         ongoingBattles.forEach((battle) => {

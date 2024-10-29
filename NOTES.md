@@ -1,16 +1,8 @@
-   issues to fix:
 
-   1. connection to core wallet
-   2. auto-navigate to create battle page after registration
-   
-   
-   
-   
-   
-   
+
    START PROJECT
    
-   3. web3
+   1. web3
       1. install older version of ethers
       npm install ethers@5.7.2 @nomiclabs/hardhat-ethers --save-dev --legacy-peer-deps
       2. install older version of openzeppelin
@@ -40,6 +32,7 @@
        2. project specific
           1. update tailwind.config.css with provided stuff
           2. aquire assets folder with provided stuff
+             To download them from github, use https://download-directory.github.io/
           3. acquire OnboardModal.jsx @note this a basic, often used web3 component that check that everything is setup properly. Put a self-closing OnbaordMocal tag in main.jsx.
              1. that core wallet is installed
              2. that we are connected the wallet

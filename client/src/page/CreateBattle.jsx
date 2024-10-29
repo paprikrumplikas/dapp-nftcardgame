@@ -21,7 +21,7 @@ const CreateBattle = () => {
     useEffect(() => {
         // check if battle is already set up (with 2 players), i.e. battleStatus is 1n. If yes, redirect to the battle page
         // @note added a second condition, otherwise due to async updates, after exiting the battle and subsequent redirect to create-battle page, we end up on the battle page again
-        if (gameData?.activeBattle?.battleStatus === 1n && gameData.activeBattle.winner === "0x0000000000000000000000000000000000000000") {
+        if (gameData?.activeBattle?.battleStatus === BigInt(1) && gameData.activeBattle.winner === "0x0000000000000000000000000000000000000000") {
             navigate(`/battle/${gameData.activeBattle.name}`);
         }
         // check if the current logged in player created a battle or not
@@ -29,7 +29,7 @@ const CreateBattle = () => {
         else if (gameData?.activeBattle) {
             console.log("game status: ", gameData.activeBattle.battleStatus);
 
-            if (gameData.activeBattle.battleStatus === 0n) {
+            if (gameData.activeBattle.battleStatus === BigInt(0)) {
                 setWaitBattle(true);
             }
         } else {
